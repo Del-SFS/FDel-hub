@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="Planet-favicon.ico" type="image/x-icon">
-<title>Projetos - Del Hub</title>
+<title>Jogos - Del Hub</title>
 
 <style>
 *{
@@ -46,17 +45,6 @@ body{
     padding:40px 0;
 }
 
-.back{
-    display:inline-block;
-    margin-bottom:30px;
-    color:#7ab8ff;
-    text-decoration:none;
-}
-
-.back:hover{
-    color:white;
-}
-
 header{
     text-align:center;
     padding:60px 0;
@@ -71,7 +59,18 @@ header p{
     color:#bfbfbf;
 }
 
-.projects{
+.back{
+    display:inline-block;
+    margin-bottom:30px;
+    color:#7ab8ff;
+    text-decoration:none;
+}
+
+.back:hover{
+    color:white;
+}
+
+.games{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
     gap:25px;
@@ -103,9 +102,9 @@ header p{
     line-height:1.6;
 }
 
-.open{
-    display:inline-block;
+.card .play{
     margin-top:20px;
+    display:inline-block;
     color:#7ab8ff;
     font-weight:bold;
 }
@@ -127,59 +126,46 @@ footer{
 <a class="back" href="/">← Voltar ao Hub</a>
 
 <header>
-    <h1>🛠️ Meus Projetos</h1>
-    <p>
-        Ferramentas, sites, utilitários e projetos desenvolvidos por mim.
-    </p>
+    <h1>🎮 Meus Jogos</h1>
+    <p>Jogos publicados e projetos disponíveis para jogar.</p>
 </header>
 
-<div class="projects">
+<div class="games">
 
-    <a class="card"
-       href="https://del-sfs.itch.io/wallpaper-selector"
-       target="_blank">
-
-        <h2>🖼️ Wallpaper Selector</h2>
-
+    <a class="card" href="https://del-sfs.itch.io/platformer-boy" target="_blank">
+        <h2>Platformer Boy</h2>
         <p>
-            Ferramenta para seleção e gerenciamento de wallpapers.
-            Desenvolvida para facilitar a organização e troca de fundos
-            de tela de forma rápida e simples.
+            Um jogo de plataforma onde o objetivo é superar obstáculos,
+            explorar fases e chegar ao final do percurso.
         </p>
-
-        <span class="open">Abrir Projeto →</span>
-
+        <span class="play">Jogar →</span>
     </a>
 
-    <a class="card"
-       href="https://github.com/Del-SFS/SFS-Comprehesive-Addon-Network"
-       target="_blank">
-
-        <h2>🌐 SFS Comprehensive Addon Network</h2>
-
+    <a class="card" href="https://del-sfs.itch.io/starbase-tycoon-sim" target="_blank">
+        <h2>Starbase Tycoon Sim</h2>
         <p>
-            Projeto focado em organizar e reunir addons, recursos
-            e conteúdos da comunidade do Spaceflight Simulator
-            em um único local.
+            Construa e administre sua própria Starbase.
+            Expanda sua operação espacial e desenvolva sua economia.
         </p>
-
-        <span class="open">Ver no GitHub →</span>
-
+        <span class="play">Jogar →</span>
     </a>
 
-    <a class="card"
-       href="https://github.com/Del-SFS/ModCenterSFS"
-       target="_blank">
-
-        <h2>📦 ModCenterSFS</h2>
-
+    <a class="card" href="https://del-sfs.itch.io/orbital-architect" target="_blank">
+        <h2>Orbital Architect</h2>
         <p>
-            Plataforma voltada para gerenciamento, descoberta e
-            distribuição de mods relacionados ao Spaceflight Simulator.
+            Gerencie recursos, desenvolva sua estação espacial
+            e construa o caminho para a liberdade.
         </p>
+        <span class="play">Jogar →</span>
+    </a>
 
-        <span class="open">Ver no GitHub →</span>
-
+    <a class="card" href="https://del-sfs.itch.io/solar-evolution" target="_blank">
+        <h2>Solar Evolution</h2>
+        <p>
+            Uma experiência focada na evolução e desenvolvimento
+            de sistemas ao longo do tempo.
+        </p>
+        <span class="play">Jogar →</span>
     </a>
 
 </div>
@@ -207,8 +193,7 @@ for(let i=0;i<200;i++){
     star.style.left=Math.random()*100+"%";
     star.style.top=Math.random()*100+"%";
 
-    star.style.animationDuration=
-        (Math.random()*4+1)+"s";
+    star.style.animationDuration=(Math.random()*4+1)+"s";
 
     starsContainer.appendChild(star);
 }
