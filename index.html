@@ -1,213 +1,313 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Del Hub</title>
-    <style>
-        /* Configurações Gerais e Cores */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
         }
 
-        body {
-            background-color: #121214;
-            color: #e1e1e6;
-            line-height: 1.6;
-            padding: 40px 20px;
+        html{
+            scroll-behavior:smooth;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
+        body{
+            font-family:Arial, Helvetica, sans-serif;
+            background:linear-gradient(to bottom,#070b18,#000);
+            color:white;
+            min-height:100vh;
+            overflow-x:hidden;
         }
 
-        /* Títulos */
-        h1, h2 {
-            color: #00ff87;
-            margin-bottom: 20px;
+
+        #stars{
+            position:fixed;
+            width:100%;
+            height:100%;
+            top:0;
+            left:0;
+            z-index:-1;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 40px;
-            text-shadow: 0 0 10px rgba(0, 255, 135, 0.2);
+        .star{
+            position:absolute;
+            background:white;
+            border-radius:50%;
+            animation:twinkle infinite alternate;
         }
 
-        h2 {
-            font-size: 1.8rem;
-            border-bottom: 2px solid #202024;
-            padding-bottom: 8px;
-            margin-top: 40px;
+        @keyframes twinkle{
+            from{
+                opacity:0.2;
+            }
+            to{
+                opacity:1;
+            }
         }
 
-        /* Seção Sobre Mim */
-        .sobre-mim {
-            background-color: #202024;
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid #29292e;
+        .container{
+            width:90%;
+            max-width:1200px;
+            margin:auto;
+            padding:40px 0;
         }
 
-        .sobre-mim p {
-            font-size: 1.1rem;
-            color: #c4c4cc;
+        /* Header */
+        header{
+            text-align:center;
+            padding:80px 0;
         }
 
-        /* Grade de Cards (Jogos e Projetos) */
-        .grid-projetos {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+        header h1{
+            font-size:4rem;
+            margin-bottom:10px;
         }
 
-        .card {
-            background-color: #202024;
-            border-radius: 8px;
-            border: 1px solid #29292e;
-            overflow: hidden;
-            transition: transform 0.2s, border-color 0.2s;
-            display: flex;
-            flex-direction: column;
+        .subtitle{
+            font-size:1.2rem;
+            color:#bfbfbf;
+            margin-bottom:15px;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: #00ff87;
+        .tagline{
+            color:#8db9ff;
         }
 
-        .card-conteudo {
-            padding: 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        /* Seções */
+        section{
+            margin-bottom:40px;
         }
 
-        .card h3 {
-            color: #ffffff;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
+        .glass{
+            background:rgba(255,255,255,0.05);
+            backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px;
+            padding:25px;
         }
 
-        .card p {
-            color: #8d8d99;
-            font-size: 0.95rem;
-            margin-bottom: 15px;
+        h2{
+            margin-bottom:15px;
+            color:#7ab8ff;
         }
 
-        .btn-projeto {
-            display: inline-block;
-            background-color: #00ff87;
-            color: #09090a;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-weight: bold;
-            text-align: center;
-            font-size: 0.9rem;
-            transition: background 0.2s;
+        .about p{
+            line-height:1.8;
+            color:#d6d6d6;
         }
 
-        .btn-projeto:hover {
-            background-color: #00cc6a;
+        /* Cards */
+        .cards{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:25px;
         }
 
-        /* Seção de Links */
-        .lista-links {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
+        .card{
+            text-decoration:none;
+            color:white;
+            background:rgba(255,255,255,0.05);
+            backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px;
+            padding:30px;
+            transition:all 0.3s ease;
         }
 
-        .link-item {
-            background-color: #202024;
-            color: #ffffff;
-            text-decoration: none;
-            padding: 15px 20px;
-            border-radius: 6px;
-            border: 1px solid #29292e;
-            font-weight: 500;
-            transition: background 0.2s, padding-left 0.2s;
+        .card:hover{
+            transform:translateY(-8px);
+            box-shadow:0 0 25px rgba(80,150,255,0.4);
         }
 
-        .link-item:hover {
-            background-color: #29292e;
-            color: #00ff87;
-            padding-left: 25px;
+        .card h3{
+            margin-bottom:15px;
+            font-size:1.8rem;
         }
-    </style>
-</head>
+
+        .card p{
+            color:#d0d0d0;
+            line-height:1.6;
+        }
+
+        /* Links */
+        .links p{
+            color:#d6d6d6;
+            line-height:1.8;
+        }
+
+        .links ul{
+            margin-top:15px;
+            margin-left:20px;
+        }
+
+        .links li{
+            margin-bottom:12px;
+            color:#d6d6d6;
+        }
+
+        .socials{
+            margin-top:20px;
+        }
+
+        .socials a{
+            display:inline-block;
+            margin-right:15px;
+            margin-bottom:10px;
+            text-decoration:none;
+            color:#7ab8ff;
+            transition:0.3s;
+        }
+
+        .socials a:hover{
+            color:white;
+        }
+
+        /* Footer */
+        footer{
+            text-align:center;
+            padding:30px 0;
+            color:#888;
+        }
+        </style>
+    </head>
 <body>
 
-    <div class="container">
-        <h1>Del Hub</h1>
+<div id="stars"></div>
 
-        <!-- SEÇÃO: SOBRE MIM -->
-        <section>
-            <h2>Sobre Mim</h2>
-            <div class="sobre-mim">
-                <p>Meu nome é Wendel, mas na internet sou conhecido como Del. Sou desenvolvedor focado em aprender programação. Atualmente, domino conceitos básicos de HTML e CSS para o desenvolvimento web e estou avançando nos meus estudos de Python para criar lógicas mais complexas e jogos!</p>
-            </div>
-        </section>
+<div class="container">
 
-        <!-- SEÇÃO: CARDS DE JOGOS E PROJETOS -->
-        <section>
-            <h2>Jogos e Projetos</h2>
-            <div class="grid-projetos">
-                
-                <!-- Card 1 -->
-                <div class="card">
-                    <div class="card-conteudo">
-                        <div>
-                            <h3>Meu Primeiro Jogo</h3>
-                            <p>Um jogo rápido criado para testar mecânicas e lógica de programação.</p>
-                        </div>
-                        <a href="#" target="_blank" class="btn-projeto">Jogar no Itch.io</a>
-                    </div>
-                </div>
+<header>
+    <h1>Del Hub</h1>
 
-                <!-- Card 2 -->
-                <div class="card">
-                    <div class="card-conteudo">
-                        <div>
-                            <h3>Projeto Python</h3>
-                            <p>Script automatizado desenvolvido durante os meus estudos da linguagem Python.</p>
-                        </div>
-                        <a href="#" target="_blank" class="btn-projeto">Ver Código</a>
-                    </div>
-                </div>
+    <p class="subtitle">
+        Meu espaço para compartilhar jogos, projetos e experiências.
+    </p>
 
-                <!-- Card 3 -->
-                <div class="card">
-                    <div class="card-conteudo">
-                        <div>
-                            <h3>Este Portfólio</h3>
-                            <p>Página web responsiva criada com HTML, CSS e hospedada diretamente no GitHub Pages.</p>
-                        </div>
-                        <a href="#" target="_blank" class="btn-projeto">Ver Repositório</a>
-                    </div>
-                </div>
+    <p class="tagline">
+        🎮 Desenvolvedor Indie • 🚀 Projetos Espaciais • 🛠 Criador de Ferramentas
+    </p>
+</header>
 
-            </div>
-        </section>
+<section class="about glass">
+    <h2>👋 Sobre Mim</h2>
 
-        <!-- SEÇÃO: LINKS -->
-        <section>
-            <h2>Links Úteis</h2>
-            <div class="lista-links">
-                <a href="https://itch.io" target="_blank" class="link-item">🎮 Perfil do Itch.io</a>
-                <a href="https://github.com" target="_blank" class="link-item">💻 Meu GitHub Principal</a>
-                <a href="#" target="_blank" class="link-item">🌐 Outra Rede Social</a>
-            </div>
-        </section>
+    <p>
+        Olá! Eu sou Del, um desenvolvedor indie apaixonado por tecnologia,
+        programação e criação de jogos. Gosto de transformar ideias em
+        projetos reais e estou sempre aprendendo novas técnicas para criar
+        experiências cada vez melhores.
+    </p>
+
+    <br>
+
+    <p>
+        Grande parte do meu trabalho envolve desenvolvimento de jogos,
+        especialmente utilizando a engine Godot. Também gosto de criar
+        ferramentas, sites, sistemas e experimentar conceitos relacionados
+        à exploração espacial, construção e criatividade.
+    </p>
+
+    <br>
+
+    <p>
+        Este site funciona como meu hub pessoal. Aqui você encontrará meus
+        jogos, projetos, experimentos e outros trabalhos que desenvolvi ao
+        longo do tempo.
+    </p>
+</section>
+
+<section>
+    <h2>📂 Jogos e Projetos</h2>
+
+    <div class="cards">
+
+        <a href="/jogos/" class="card">
+            <h3>🎮 Jogos</h3>
+
+            <p>
+                Explore meus jogos publicados, protótipos e experiências
+                em desenvolvimento.
+            </p>
+        </a>
+
+        <a href="/projetos/" class="card">
+            <h3>🛠️ Projetos</h3>
+
+            <p>
+                Ferramentas, sites, experimentos e outras criações que
+                desenvolvi.
+            </p>
+        </a>
+
     </div>
+</section>
+
+<section class="links glass">
+    <h2>🔗 Onde me encontrar</h2>
+
+    <p>
+        Se quiser acompanhar meus projetos, jogar minhas criações ou ver
+        outros trabalhos, você pode me encontrar nas plataformas abaixo.
+    </p>
+
+    <ul>
+        <li>
+            <strong>GitHub</strong> — Código-fonte, projetos de programação
+            e experimentos.
+        </li>
+
+        <li>
+            <strong>Itch.io</strong> — Jogos publicados, protótipos e demos.
+        </li>
+
+        <li>
+            <strong>Fórum SFS</strong> — Conteúdo e participação na comunidade
+            do Spaceflight Simulator.
+        </li>
+    </ul>
+
+    <div class="socials">
+        <a href="https://github.com/Del-SFS" target="_blank">GitHub</a>
+        <a href="https://del-sfs.itch.io" target="_blank">Itch.io</a>
+        <a href="https://sfsforum.com" target="_blank">Fórum SFS</a>
+    </div>
+</section>
+
+<footer>
+    © 2026 Del Hub • Todos os direitos reservados
+</footer>
+
+</div>
+
+<script>
+const starsContainer = document.getElementById("stars");
+
+for(let i = 0; i < 200; i++){
+
+    const star = document.createElement("div");
+
+    star.classList.add("star");
+
+    const size = Math.random() * 3 + 1;
+
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+
+    star.style.animationDuration =
+        (Math.random() * 4 + 1) + "s";
+
+    starsContainer.appendChild(star);
+}
+</script>
 
 </body>
 </html>
