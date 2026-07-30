@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Stellar Genesis: Final Frontier</title>
+    <style>
+        :root { 
+            --accent: #00f2ff; --life: #00ff88; --bg: #000005; 
+            --panel: rgba(10, 10, 25, 0.95); --border: 1px solid rgba(0, 242, 255, 0.3);
+        }
+
+        body { 
+            background: var(--bg); color: white; font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; overflow: hidden; user-select: none;
+        }
+
+        /* --- Tela de Seleção --- */
+        #ui-layer { 
+            position: absolute; inset: 0; z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, #050515 0%, #000 100%);
+            transition: opacity 0.8s ease;
+        }
+        
+        .star-grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; 
+            padding: 20px; max-width: 900px;
+        }
+        
+        .star-card {
+            background: rgba(255,255,255,0.03); border: 1px solid #222;
+            display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 15px;
+            transition: 0.3s; border-radius: 10px; width: 120px;
+        }
+        .star-card:hover { 
+            background: rgba(0, 242, 255, 0.1); border-color: var(--accent); transform: scale(1.05);
+        }
+        .star-btn { width: 40px; height: 40px; border-radius: 50%; margin-bottom: 10px; pointer-events: none; }
+
+        /* --- Painel de Controle Unificado --- */
+        #control-panel {
+            position: absolute; top: 20px; right: 20px; width: 260px;
+            background: var(--panel); border: var(--border); border-radius: 12px;
+            padding: 15px; z-index: 1000; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .hud-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid #222; }
+        
+        #nebula-bar { 
+            width: 100%; height: 6px; background: #111; margin: 8px 0; border-radius: 3px; overflow: hidden; 
+        }
+        #nebula-fill { width: 100%; height: 100%; background: #ffaa00; transition: 0.3s; }
+
+        /* --- Sidebar de Dados --- */
+        #sidebar { 
+            position: absolute; left: 20px; top: 20px; bottom: 80px; width: 300px; 
+            background: var(--panel); border: var(--border); border-radius: 12px;
+            padding: 20px; z-index: 1000; overflow-y: auto; transition: 0.5s;
+        }
+        #sidebar.minimized { transform: translateX(-340px); opacity: 0; }
+
+        .planet-card {
+            background: rgba(255,255,255,0.02); border: 1px solid #222;
+            padding: 10px; margin-bottom: 8px; border-radius: 6px; font-size: 11px;
+        }
+        .habitable { border-left: 3px solid var(--life) !important; }
+
+        #btn-toggle {
+            position: absolute; left: 20px; bottom: 20px; z-index: 1100;
+            background: var(--accent); color: #000; border: none; font-weight: bold;
+            padding: 12px 20px; border-radius: 6px; cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+        input[type=range] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+        h4 { margin: 0 0 5px 0; color: var(--accent); font-size: 12px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+<div id="ui-layer">
+    <h1 style="letter-spacing: 10px; margin-bottom: 30px;">STELLAR GENESIS</h1>
+    <div class="star-grid" id="star-list"></div>
+    <p style="color: #444; font-size: 10px;">SELECIONE UM CORPO CELESTE PARA INICIAR</p>
+</div>
+
+<div id="sidebar" class="minimized">
+    <h3 style="color: var(--accent); margin-top:0;">SCANNER LOCAL</h3>
+    <div id="stats-content" style="font-size: 12px; line-height: 1.6;"></div>
+    <div id="planet-list" style="margin-top: 20px;"></div>
+</div>
+
+<button id="btn-toggle" class="hidden">DADOS DO SISTEMA</button>
+
+<div id="control-panel" class="hidden">
+    <h4>PARAMETROS FÍSICOS</h4>
+    <div style="font-size: 11px; color: #888;">Time Warp: <span id="tw-val">20</span>x</div>
+    <input type="range" id="time-slider" min="0" max="100" value="20">
+    
+    <div style="margin-top: 10px;">
+        <label style="font-size: 11px; color: #888; display: flex; align-items: center; gap: 5px;">
+            <input type="checkbox" id="show-orbits" checked> Mostrar Órbitas
+        </label>
+    </div>
+
+    <div class="hud-section">
+        <h2 id="star-name" style="margin:0; font-size: 18px; color: var(--accent);">SOL</h2>
+        <div id="age-display" style="font-family: monospace; font-size: 16px;">0.00 Ma</div>
+        
+        <div style="margin-top: 10px;">
+            <div style="font-size: 9px; color: #666; display: flex; justify-content: space-between;">
+                <span>NEBULOSA</span> <span id="neb-perc">100%</span>
+            </div>
+            <div id="nebula-bar"><div id="nebula-fill"></div></div>
+        </div>
+    </div>
+</div>
+
+<canvas id="simCanvas"></canvas>
+
+<script>
+/**
+ * STELLAR GENESIS - ENGINE V.ITCH
+ */
+const UA = 100;
+const MAX_DISK = 200;
+
+const STAR_TYPES = {
+    'O': { c: '#9bb0ff', r: 45, hz: [10, 18], life: 10, n: 'Estrela Tipo O' },
+    'B': { c: '#aabfff', r: 35, hz: [6, 12], life: 100, n: 'Estrela Tipo B' },
+    'G': { c: '#ffffcc', r: 22, hz: [0.9, 1.4], life: 10000, n: 'Anã Amarela' },
+    'M': { c: '#ffaa00', r: 15, hz: [0.2, 0.5], life: 150000, n: 'Anã Vermelha' },
+    'WD': { c: '#ffffff', r: 8, hz: [0.05, 0.15], life: 1000000, n: 'Anã Branca' },
+    'NS': { c: '#00ffff', r: 4, hz: [0.01, 0.05], life: 2000000, n: 'Estrela de Nêutrons' },
+    'RG': { c: '#ff4400', r: 70, hz: [15, 30], life: 500, n: 'Gigante Vermelha' },
+    'BH': { c: '#111', r: 5, hz: [5, 10], life: 9999999, n: 'Buraco Negro' }
+};
+
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+let bodies = [], star = null, age = 0, tSpeed = 20, zoom = 0.4;
+let camX = 0, camY = 0, isDragging = false, lx, ly;
+let nebulaOpacity = 1.0;
+
+// Inicializar Grid
+const grid = document.getElementById('star-list');
+Object.keys(STAR_TYPES).forEach(key => {
+    const s = STAR_TYPES[key];
+    const card = document.createElement('div');
+    card.className = 'star-card';
+    card.innerHTML = `
+        <div class="star-btn" style="background:${s.c}; box-shadow: 0 0 15px ${s.c}aa"></div>
+        <div style="font-size:10px; font-weight:bold">${s.n}</div>
+    `;
+    card.addEventListener('click', () => startSim(key));
+    grid.appendChild(card);
+});
+
+function startSim(key) {
+    star = { ...STAR_TYPES[key] };
+    bodies = []; age = 0; nebulaOpacity = 1.0;
+    
+    // Esconder UI de Seleção
+    const layer = document.getElementById('ui-layer');
+    layer.style.opacity = '0';
+    setTimeout(() => {
+        layer.classList.add('hidden');
+        document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+        document.getElementById('star-name').innerText = star.n.toUpperCase();
+    }, 800);
+
+    // Gerar Disco Protoplanetário Denso
+    for(let i = 0; i < 1200; i++) {
+        let dist = (star.r/UA + 0.1) + Math.pow(Math.random(), 2) * MAX_DISK;
+        bodies.push({
+            a: dist * UA,
+            e: Math.random() * 0.1,
+            angle: Math.random() * Math.PI * 2,
+            w: Math.random() * Math.PI * 2,
+            m: 0.05 + Math.random() * 0.4,
+            s: 0.5 + Math.random(),
+            isP: false,
+            color: dist > 4 ? '#88a' : '#665'
+        });
+    }
+    requestAnimationFrame(loop);
+}
+
+function update() {
+    if (!star || tSpeed === 0) return;
+    let dt = tSpeed * 0.01;
+    age += dt * 8;
+
+    // Dissipação da Nebulosa
+    if (age > 1000) {
+        nebulaOpacity -= 0.0002 * tSpeed;
+        if (nebulaOpacity < 0) nebulaOpacity = 0;
+    }
+    
+    document.getElementById('nebula-fill').style.width = (nebulaOpacity * 100) + "%";
+    document.getElementById('neb-perc').innerText = Math.floor(nebulaOpacity * 100) + "%";
+
+    for (let i = 0; i < bodies.length; i++) {
+        let b = bodies[i];
+        
+        // Gravidade (Kepler) - Buraco Negro é mais rápido
+        let speedMult = (star.n === 'Buraco Negro') ? 0.35 : 0.2;
+        let motion = (speedMult / Math.sqrt(Math.pow(b.a / UA, 3)));
+        b.angle += motion * dt;
+
+        // Efeito T-Tauri (empurra poeira)
+        if (nebulaOpacity < 0.7 && !b.isP) {
+            b.a += (0.015 * (1 - nebulaOpacity)) * dt;
+        }
+
+        // Acreção
+        if (i % 2 === 0) {
+            for (let j = i + 1; j < bodies.length; j++) {
+                let b2 = bodies[j];
+                if (Math.abs(b.a - b2.a) < (b.s + b2.s + 1.2)) {
+                    b.m += b2.m;
+                    b.s = Math.sqrt(b.m) * 0.8;
+                    b.a = (b.a * b.m + b2.a * b2.m) / (b.m + b2.m);
+                    if (!b.isP && b.m > 25) b.isP = true;
+                    bodies.splice(j, 1);
+                }
+            }
+        }
+    }
+}
+
+function draw() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width, canvas.height);
+
+    if (!star) return;
+
+    ctx.save();
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(camX, camY);
+
+    // 1. Nebulosa Visual
+    if (nebulaOpacity > 0.01) {
+        let g = ctx.createRadialGradient(0,0,0, 0,0, MAX_DISK * UA);
+        g.addColorStop(0, `rgba(50, 40, 20, ${nebulaOpacity * 0.4})`);
+        g.addColorStop(1, 'transparent');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0,0, MAX_DISK * UA, 0, 7); ctx.fill();
+    }
+
+    // 2. Zona Habitável
+    if (document.getElementById('show-orbits').checked) {
+        ctx.beginPath();
+        ctx.arc(0,0, star.hz[1]*UA, 0, 7); ctx.arc(0,0, star.hz[0]*UA, 0, 7, true);
+        ctx.fillStyle = 'rgba(0, 255, 136, 0.05)'; ctx.fill();
+    }
+
+    // 3. Estrela
+    let sg = ctx.createRadialGradient(0,0,0, 0,0, star.r*4);
+    sg.addColorStop(0, star.c); sg.addColorStop(1, 'transparent');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(0,0, star.r*4, 0, 7); ctx.fill();
+    
+    ctx.fillStyle = (star.n === 'Buraco Negro') ? '#000' : '#fff';
+    ctx.beginPath(); ctx.arc(0,0, star.r, 0, 7); ctx.fill();
+    if(star.n === 'Buraco Negro') { 
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); 
+    }
+
+    // 4. Corpos
+    const showOrb = document.getElementById('show-orbits').checked;
+    bodies.forEach(b => {
+        let r = b.a * (1 - b.e * b.e) / (1 + b.e * Math.cos(b.angle));
+        let x = r * Math.cos(b.angle + b.w);
+        let y = r * Math.sin(b.angle + b.w);
+
+        if (b.isP && showOrb) {
+            ctx.beginPath(); ctx.ellipse(0,0, b.a, b.a * Math.sqrt(1-b.e*b.e), b.w, 0, 7);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.stroke();
+        }
+
+        ctx.fillStyle = b.isP ? ( (r/UA > star.hz[0] && r/UA < star.hz[1]) ? '#00ff88' : '#aaa' ) : b.color;
+        ctx.globalAlpha = b.isP ? 1 : 0.3 + (nebulaOpacity * 0.4);
+        ctx.beginPath(); ctx.arc(x, y, b.s, 0, 7); ctx.fill();
+    });
+
+    ctx.restore();
+}
+
+function loop() {
+    update(); draw();
+    
+    document.getElementById('age-display').innerText = (age/1000).toFixed(2) + " Ma";
+    document.getElementById('tw-val').innerText = tSpeed;
+
+    if (age % 50 < 5) {
+        const p = bodies.filter(b => b.isP).sort((a,b)=>a.a-b.a);
+        document.getElementById('stats-content').innerHTML = `
+            Órbitas Estáveis: <b>${p.length}</b><br>
+            Massa Total do Disco: <b>${bodies.length}</b><br>
+            Status: <b>${nebulaOpacity > 0.5 ? 'Acreção Densa' : 'Limpeza Estelar'}</b>
+        `;
+        
+        document.getElementById('planet-list').innerHTML = p.map((pl, i) => {
+            let dUA = (pl.a/UA).toFixed(2);
+            let isH = dUA > star.hz[0] && dUA < star.hz[1];
+            return `
+                <div class="planet-card ${isH ? 'habitable' : ''}">
+                    <strong>Mundo ${(pl.a/100).toFixed(1)} UA</strong><br>
+                    Massa: ${(pl.m/10).toFixed(2)} M⊕ | ${isH ? 'HABITÁVEL' : 'HOSTIL'}
+                </div>
+            `;
+        }).join('');
+    }
+    requestAnimationFrame(loop);
+}
+
+// Controles
+document.getElementById('time-slider').oninput = (e) => tSpeed = parseInt(e.target.value);
+document.getElementById('btn-toggle').onclick = () => document.getElementById('sidebar').classList.toggle('minimized');
+
+canvas.onwheel = (e) => { zoom *= e.deltaY < 0 ? 1.1 : 0.9; };
+canvas.onmousedown = (e) => { isDragging = true; lx = e.clientX; ly = e.clientY; };
+window.onmouseup = () => isDragging = false;
+window.onmousemove = (e) => {
+    if (isDragging) {
+        camX += (e.clientX - lx) / zoom;
+        camY += (e.clientY - ly) / zoom;
+        lx = e.clientX; ly = e.clientY;
+    }
+};
+</script>
+</body>
+</html>
