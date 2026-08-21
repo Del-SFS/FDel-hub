@@ -1,92 +1,223 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+        <link rel="manifest" href="/site.webmanifest">
+        <link rel="shortcut icon" href="/favicon/favicon.ico" type="image/x-icon">
+        <title>SCAN</title>
 
-        <!-- favicons -->
-        <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="../favicon/favicon-16x16.png">
-        <link rel="manifest" href="../favicon/site.webmanifest">
-        <link rel="shortcut icon" href="../favicon/favicon.ico" type="image/x-icon">
+        <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
 
-    <!-- Titulo -->
-    <title>SCAN [Arquivado]</title>
+        html{
+            scroll-behavior:smooth;
+        }
 
-    <!-- estilo -->
-    <style>
-        body {
-            background-color: rgb(29, 28, 28);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 10px;
+        body{
+            font-family:Arial, Helvetica, sans-serif;
+            background:linear-gradient(to bottom,#070b18,#000);
+            color:white;
+            min-height:100vh;
+            overflow-x:hidden;
         }
-        h1 {
-            color: rgb(235, 235, 235);
+
+
+        #stars{
+            position:fixed;
+            width:100%;
+            height:100%;
+            top:0;
+            left:0;
+            z-index:-1;
         }
-        p {
-            color: aliceblue;
+
+        .star{
+            position:absolute;
+            background:white;
+            border-radius:50%;
+            animation:twinkle infinite alternate;
         }
-        .btn-voltar {
+
+        @keyframes twinkle{
+            from{
+                opacity:0.2;
+            }
+            to{
+                opacity:1;
+            }
+        }
+
+        .container{
+            width:90%;
+            max-width:1200px;
+            margin:auto;
+            padding:40px 0;
+        }
+
+        /* Header */
+        header{
+            text-align:center;
+            padding:80px 0;
+        }
+
+        header h1{
+            font-size:4rem;
+            margin-bottom:10px;
+        }
+
+        .subtitle{
+            font-size:1.2rem;
+            color:#bfbfbf;
+            margin-bottom:15px;
+        }
+
+        .tagline{
+            color:#8db9ff;
+        }
+
+        /* Seções */
+        section{
+            margin-bottom:40px;
+        }
+
+        .glass{
+            background:rgba(255,255,255,0.05);
+            backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px;
+            padding:25px;
+        }
+
+        h2{
+            margin-bottom:15px;
+            color:#7ab8ff;
+        }
+
+        /* Cards */
+        .cards{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:25px;
+        }
+
+        .card{
+            text-decoration:none;
+            color:white;
+            background:rgba(255,255,255,0.05);
+            backdrop-filter:blur(10px);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:20px;
+            padding:30px;
+            transition:all 0.3s ease;
+        }  --
+
+        .card:hover{
+            transform:translateY(-8px);
+            box-shadow:0 0 25px rgba(80,150,255,0.4);
+        }
+
+        .card h2{
+            margin-bottom:15px;
+            font-size:1.8rem;
+        }
+
+        .card p{
+            color:#d0d0d0;
+            line-height:1.6;
+        }        
+        footer{
+            text-align:center;
+            padding:30px 0;
+            color:#888;
+        }
+                .download-btn {
             display: inline-block;
-            padding: 8px 16px;
-            margin-bottom: 20px;
-            color: #fdfeff !important;
+            padding: 10px 20px;
+            background-color: #1733b1;
+            color: white;
             text-decoration: none;
-            background-color: transparent;
-            border-radius: 6px;
-            border: 1px solid #15a16c;
-            transition: 0.7s;
-        }
-        .btn-voltar:hover{
-            border-color: #00ff37;
-            background-color: #18b818;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.4s ease;
         }
 
-        .btn-download {
-            display: inline-block;
-            padding: 8px 16px;
-            margin-top: 50px;
-            margin-left: 20px;
-            color: #58a6ff !important;
-            text-decoration: none;
-            background-color: transparent;
-            border-radius: 6px;
+        .download-btn:hover {
+            background-color: #132da0c7;
+         }
+        </style>
 
-            /*AQUI o botão/caixa */
-            border: 1px solid #1d5ca5;
-            transition: 1s;
-            
-        }
-        .btn-download:hover {
-            border-color: #083adb;
-            background-color: #083adb;
-        }
-        h3 {
-            color: aliceblue;
-        }
-    </style>
-
+    </head>
 <body>
 
-    <!-- voltar para o Hub -->
-     <a href="/index.html" class="btn-voltar"><- Voltar para o Hub</a>
-     <br><br>
+<div id="stars"></div>
 
-    <!-- conteudo -->
-    <h1>SCAN | SFS Comprehesive Addon Network</h1>
-    <br>
+<div class="container">
+
+<section class="about glass">
+    <h2>👋 Sobre o SCAN</h2>
+       
     <p>
-        O SFS Comprehesive Addon Network era um projeto com o intuito de gerenciar e instalar mods para o Spaceflight Simulator (SFS)
+        O SFS Comprehensive Addon Netvork ou SCAN é um programa que tinha o intuito de ser um instalador e gerenciador de mods para SFS.
+        <br>
+        feito em Python mas depois transferito para C# (CSharp)
     </p>
     <br>
-    <p>
-        mas falhou porque, alem de ser meio dificio o C# tambem estáva me empatando e eu perdi um pouco do animo para fazer e continuar ele.
-    </p>
-    <h3>Mas...</h3>
-    <p>se quiser testar a versão que disponibiblizei aqui.</p>
+    <h3>Porque foi Abandonado/Canselado</h3>
+    <br>
 
-    <a href="/download/SCAN.zip" class="btn-download"><p>Download SCAN v0.0.9beta</p></a>
+    <p>
+        Porque a Team Curiosity fez para que o SFS fosse muito facil de instalar um mod, e os tutoriais e a base de guias de instalação são manuais, então não vale apena, criar um instalador e gerenciador parecido com o CKAN, sendo que todo mundo já sabe ou aprende como instalar manualmente.
+    </p>
+    <br>
+    <h3>Download</h3>
+    <br>
+    <p>
+        Você se interesou pelo programa baixe ele!
+    </p>
+    <br>
+    <a href="download/SCAN.zip" download="meu_arquivo.pdf" class="download-btn">
+        📥 Baixar SCAN (Windows)
+    </a>
+</section>
+
+
+<footer>
+    © 2026 Del Hub • Todos os direitos reservados
+</footer>
+
+</div>
+
+<script>
+const starsContainer = document.getElementById("stars");
+
+for(let i = 0; i < 200; i++){
+
+    const star = document.createElement("div");
+
+    star.classList.add("star");
+
+    const size = Math.random() * 3 + 1;
+
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+
+    star.style.animationDuration =
+        (Math.random() * 4 + 1) + "s";
+
+    starsContainer.appendChild(star);
+}
+</script>
 
 </body>
 </html>
