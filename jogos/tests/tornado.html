@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador de Tornado Evolutivo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #111827;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 100vh;
+            overflow: hidden;
+            padding: 15px;
+        }
+        h1 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            text-align: center;
+            color: #f3f4f6;
+        }
+        #canvasContainer {
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            background: #1f2937;
+            border: 3px solid #374151;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            width: 100%;
+            max-width: 400px;
+            background: #1f2937;
+            padding: 15px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:active {
+            background: #dc2626;
+            transform: scale(0.97);
+        }
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            background: #111827;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: monospace;
+            border: 1px solid #374151;
+        }
+        .hud span {
+            font-weight: bold;
+        }
+        #efDisplay {
+            color: #fbbf24;
+        }
+        .status {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌪️ Simulador de Tornado Evolutivo</h1>
+
+    <div id="canvasContainer">
+        <canvas id="simulationCanvas"></canvas>
+    </div>
+
+    <div class="controls">
+        <div class="hud">
+            <div>Força Atual: <span id="efDisplay">--</span></div>
+            <div>Vento: <span id="windDisplay">0 km/h</span></div>
+        </div>
+
+        <button id="startBtn">Iniciar Simulação</button>
+        
+        <div class="status" id="statusText">Aperte Start para gerar um tornado aleatório</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const efDisplay = document.getElementById('efDisplay');
+        const windDisplay = document.getElementById('windDisplay');
+        const statusText = document.getElementById('statusText');
+
+        const size = 400;
+        canvas.width = size;
+        canvas.height = size;
+
+        // Configuração matemática das escalas EF (Raio visual e faixa de vento real)
+        const escalas = [
+            { nome: "EF0", raio: 8,  ventoMin: 105, ventoMax: 137, cor: "#60a5fa" },
+            { nome: "EF1", raio: 14, ventoMin: 138, ventoMax: 177, cor: "#34d399" },
+            { nome: "EF2", raio: 22, ventoMin: 178, ventoMax: 217, cor: "#fbbf24" },
+            { nome: "EF3", raio: 32, ventoMin: 218, ventoMax: 266, cor: "#fb923c" },
+            { nome: "EF4", raio: 42, ventoMin: 267, ventoMax: 322, cor: "#f87171" },
+            { nome: "EF5", raio: 55, ventoMin: 323, ventoMax: 450, cor: "#ec4899" }
+        ];
+        
+        let x, y, vx, vy;
+        let nivelAtual; // Índice de 0 a 5 na array de escalas
+        let ventoAtual;
+        let animationFrameId;
+        let running = false;
+
+        // Tela oculta para persistência dos estragos na grama/terreno
+        let dmgCanvas = document.createElement('canvas');
+        dmgCanvas.width = size;
+        dmgCanvas.height = size;
+        let dmgCtx = dmgCanvas.getContext('2d');
+
+        function resetSimulation() {
+            dmgCtx.fillStyle = '#1f2937';
+            dmgCtx.fillRect(0, 0, size, size);
+
+            x = 15;
+            y = size / 2;
+            vx = 2.0;
+            vy = 0;
+
+            // Define um nível inicial totalmente aleatório (0 a 5) ao clicar no botão
+            nivelAtual = Math.floor(Math.random() * escalas.length);
+            atualizarDadosHUD();
+
+            statusText.innerText = "🌪️ Tornado tocando o solo!";
+        }
+
+        function atualizarDadosHUD() {
+            const dados = escalas[nivelAtual];
+            efDisplay.innerText = dados.nome;
+            efDisplay.style.color = dados.cor;
+            
+            // Gera um vento compatível com a categoria atual
+            ventoAtual = Math.floor(Math.random() * (dados.ventoMax - dados.ventoMin + 1)) + dados.ventoMin;
+            windDisplay.innerText = `${ventoAtual} km/h`;
+        }
+
+        function drawGrid() {
+            ctx.drawImage(dmgCanvas, 0, 0);
+
+            // Linhas de radar/grade
+            ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < size; i += 40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, size); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(size, i); ctx.stroke();
+            }
+        }
+
+        function updateTornado() {
+            if (!running) return;
+
+            // 1. Movimentação Caótica
+            vx += (Math.random() - 0.46) * 0.4; 
+            vy += (Math.random() - 0.5) * 0.8;
+            vx = Math.max(1.2, Math.min(vx, 4.0));
+            vy = Math.max(-2.5, Math.min(vy, 2.5));
+
+            x += vx;
+            y += vy;
+
+            // 2. Sistema de Evolução Dinâmica (Muda a intensidade raramente ao longo do caminho)
+            if (Math.random() < 0.02) { // 2% de chance por frame de mudar de força
+                let mudanca = Math.random() > 0.5 ? 1 : -1;
+                let novoNivel = nivelAtual + mudanca;
+                
+                // Impede que saia dos limites EF0 ou EF5
+                if (novoNivel >= 0 && novoNivel < escalas.length) {
+                    nivelAtual = novoNivel;
+                    atualizarDadosHUD();
+                    statusText.innerText = `⚠️ O tornado mudou para ${escalas[nivelAtual].nome}!`;
+                }
+            }
+
+            const infoEF = escalas[nivelAtual];
+            const raio = infoEF.raio;
+
+            // 3. Desenha o rastro térmico de destruição na tela oculta
+            let gradienteDano = dmgCtx.createRadialGradient(x, y, 2, x, y, raio);
+            gradienteDano.addColorStop(0, 'rgba(239, 68, 68, 0.35)');  // Centro destrutivo
+            gradienteDano.addColorStop(0.6, 'rgba(249, 115, 22, 0.15)'); // Bordas leves
+            gradienteDano.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+            dmgCtx.fillStyle = gradienteDano;
+            dmgCtx.beginPath();
+            dmgCtx.arc(x, y, raio, 0, Math.PI * 2);
+            dmgCtx.fill();
+
+            // Renderiza o fundo com a destruição acumulada
+            drawGrid();
+
+            // 4. Desenha o funil giratório na tela principal (Animação visual do vórtice)
+            let pulsoFunil = raio * (0.4 + Math.sin(Date.now() * 0.02) * 0.05);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.beginPath();
+            ctx.arc(x, y, pulsoFunil * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.strokeStyle = infoEF.cor; // Borda brilha com a cor da categoria atual
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(x, y, pulsoFunil, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Condição de saída das bordas do mapa
+            if (x > size + raio || y < -raio || y > size + raio) {
+                running = false;
+                statusText.innerText = "🏁 O tornado perdeu força e se dissipou.";
+                startBtn.innerText = "Simular Novo Tornado";
+                cancelAnimationFrame(animationFrameId);
+                return;
+            }
+
+            animationFrameId = requestAnimationFrame(updateTornado);
+        }
+
+        // Único gatilho do jogo é o clique no botão Start
+        startBtn.addEventListener('click', () => {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            running = true;
+            startBtn.innerText = "Simulando...";
+            resetSimulation();
+            updateTornado();
+        });
+
+        // Estado inicial em espera
+        resetSimulation();
+        nivelAtual = 0;
+        efDisplay.innerText = "--";
+        windDisplay.innerText = "0 km/h";
+        drawGrid();
+    </script>
+</body>
+</html>

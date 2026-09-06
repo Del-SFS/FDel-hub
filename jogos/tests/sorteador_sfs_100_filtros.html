@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFS Challenge Hub - Del-Hub</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0e14;
+            color: #e6edf3;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 28px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .title {
+            color: #58a6ff;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 0.95rem;
+        }
+
+        /* Modos / Filtros */
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background-color: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .filter-btn:hover {
+            border-color: #8b949e;
+        }
+
+        .filter-btn.active[data-filter="all"] {
+            background-color: #1f6feb;
+            color: #ffffff;
+            border-color: #58a6ff;
+        }
+
+        .filter-btn.active[data-filter="easy"] {
+            background-color: #238636;
+            color: #ffffff;
+            border-color: #3fb950;
+        }
+
+        .filter-btn.active[data-filter="hard"] {
+            background-color: #da3633;
+            color: #ffffff;
+            border-color: #f85149;
+        }
+
+        .filter-btn.active[data-filter="realist"] {
+            background-color: #8957e5;
+            color: #ffffff;
+            border-color: #a371f7;
+        }
+
+        /* Card de Exibição */
+        .card {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-left: 6px solid #1f6feb;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s ease;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card-number {
+            font-size: 0.85rem;
+            color: #8b949e;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-easy { background-color: rgba(46, 160, 67, 0.2); color: #3fb950; border: 1px solid #2ea043; }
+        .badge-hard { background-color: rgba(248, 81, 73, 0.2); color: #f85149; border: 1px solid #da3633; }
+        .badge-realist { background-color: rgba(163, 113, 247, 0.2); color: #a371f7; border: 1px solid #8957e5; }
+
+        .card-text {
+            font-size: 1.15rem;
+            line-height: 1.5;
+            color: #f0f6fc;
+        }
+
+        /* Botão Principal */
+        .btn-action {
+            background-color: #238636;
+            color: #ffffff;
+            border: none;
+            padding: 16px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+
+        .footer a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🚀 SFS Challenge Hub</h1>
+            <p class="subtitle">100 Desafios filtrados por Dificuldade e Estilo</p>
+        </div>
+
+        <!-- Seletor de Dificuldade -->
+        <div class="filter-group">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Todos (100)</button>
+            <button class="filter-btn" data-filter="easy" onclick="setFilter('easy')">🟢 Easy</button>
+            <button class="filter-btn" data-filter="hard" onclick="setFilter('hard')">🔴 Hard</button>
+            <button class="filter-btn" data-filter="realist" onclick="setFilter('realist')">🟣 Realista</button>
+        </div>
+
+        <!-- Card da Missão -->
+        <div class="card" id="challengeCard">
+            <div class="card-meta">
+                <span class="card-number" id="challengeNum">Missão Pronta</span>
+                <span class="badge badge-easy" id="challengeBadge" style="display: none;">Easy</span>
+            </div>
+            <div class="card-text" id="challengeText">Selecione o filtro desejado e clique no botão abaixo para sortear sua missão!</div>
+        </div>
+
+        <button class="btn-action" onclick="sortearDesafio()">SORTEAR DESAFIO</button>
+
+        <div class="footer">
+            Del-Hub • <a href="http://del-hub.ddnsfree.com" target="_blank">del-hub.ddnsfree.com</a>
+        </div>
+    </div>
+
+    <script>
+        const desafios = [
+            // EASY (33)
+            { id: 1, cat: "easy", text: "Fazer a curva de inclinação (gravity turn) e entrar em órbita baixa da Terra." },
+            { id: 2, cat: "easy", text: "Pousar uma cápsula na Terra utilizando paraquedas e escudo térmico." },
+            { id: 3, cat: "easy", text: "Atingir uma altitude de 500 km em um voo suborbital e retornar em segurança." },
+            { id: 4, cat: "easy", text: "Entrar em órbita da Lua e retornar para a Terra na mesma missão." },
+            { id: 5, cat: "easy", text: "Realizar um pouso suave na superfície da Lua." },
+            { id: 6, cat: "easy", text: "Lançar um satélite com painéis solares e antenas para órbita terrestre." },
+            { id: 7, cat: "easy", text: "Decolar e circularizar a órbita com Ap e Pe acima de 100 km." },
+            { id: 8, cat: "easy", text: "Construir um foguete de 2 estágios simples e atingir o espaço (30 km)." },
+            { id: 9, cat: "easy", text: "Fazer um pouso em Marte usando paraquedas na atmosfera fina." },
+            { id: 10, cat: "easy", text: "Fazer um voo rasante pela Lua a menos de 10 km de altitude." },
+            { id: 11, cat: "easy", text: "Colocar um satélite em órbita alta da Terra (acima de 1000 km)." },
+            { id: 12, cat: "easy", text: "Construir um foguete sem usar nenhuma carenagem (Fairings)." },
+            { id: 13, cat: "easy", text: "Decolar da Terra e gastar 100% do combustível do primeiro estágio antes de desacoplar." },
+            { id: 14, cat: "easy", text: "Pousar na Lua usando Pernas de Pouso dedicadas." },
+            { id: 15, cat: "easy", text: "Fazer uma reentrada na Terra desacoplando todos os tanques residuais." },
+            { id: 16, cat: "easy", text: "Mandar uma sonda para a órbita do Sol (escapar da gravidade da Terra)." },
+            { id: 17, cat: "easy", text: "Fazer um voo rasante em Fobos (lua de Marte)." },
+            { id: 18, cat: "easy", text: "Entrar em órbita de Vênus e observar a camada atmosférica." },
+            { id: 19, cat: "easy", text: "Montar um foguete pequeno com apenas 1 tanque e 1 motor para alcançar 50 km." },
+            { id: 20, cat: "easy", text: "Pousar na superfície da Terra utilizando um motor secundário para desacelerar." },
+            { id: 21, cat: "easy", text: "Fazer um voo rasante em Deimos a baixa velocidade." },
+            { id: 22, cat: "easy", text: "Mandar uma sonda simples para orbitar Júpiter." },
+            { id: 23, cat: "easy", text: "Construir uma nave utilizando apenas peças com diâmetro básico (1.5m)." },
+            { id: 24, cat: "easy", text: "Atingir uma órbita perfeitamente estável com diferença menor que 2 km entre Ap e Pe." },
+            { id: 25, cat: "easy", text: "Fazer um pouso em Vênus usando paraquedas reforçados." },
+            { id: 26, cat: "easy", text: "Lançar dois satélites independentes acoplados no mesmo foguete." },
+            { id: 27, cat: "easy", text: "Decolar e reentrar na Terra pousando na água (oceano imaginário)." },
+            { id: 28, cat: "easy", text: "Construir um foguete com boosters laterais a combustível sólido." },
+            { id: 29, cat: "easy", text: "Efetuar uma quebra de órbita (retroburn) para retornar da Lua." },
+            { id: 30, cat: "easy", text: "Pousar na Lua e fincar a bandeira (deixar uma sonda de memória no local)." },
+            { id: 31, cat: "easy", text: "Mandar um módulo básico para a superfície de Marte." },
+            { id: 32, cat: "easy", text: "Realizar um pouso na Terra sem danificar nenhuma parte da cápsula." },
+            { id: 33, cat: "easy", text: "Completar uma missão de orbita simples na Terra em menos de 3 minutos." },
+
+            // HARD (34)
+            { id: 34, cat: "hard", text: "Ir até Marte e voltar para a Terra utilizando apenas 1 estágio de foguete (SSTO)." },
+            { id: 35, cat: "hard", text: "Pousar na Lua utilizando exclusivamente motores ION de baixo empuxo." },
+            { id: 36, cat: "hard", text: "Pousar na superfície da Lua sem usar pernas de pouso nem paraquedas." },
+            { id: 37, cat: "hard", text: "Completar uma missão de ida e volta para a Lua em menos de 5 minutos de tempo real." },
+            { id: 38, cat: "hard", text: "Ir até Marte sem utilizar a tela de mapa para calcular a trajetória (no olho)." },
+            { id: 39, cat: "hard", text: "Entrar na atmosfera densa de Júpiter e conseguir desacelerar e escapar de volta ao espaço." },
+            { id: 40, cat: "hard", text: "Fazer um pouso em Marte usando APENAS escudos térmicos e arrasto atmosférico." },
+            { id: 41, cat: "hard", text: "Pousar na Lua, decolar, ir para Marte e pousar em Marte na mesma missão." },
+            { id: 42, cat: "hard", text: "Realizar uma acoplagem orbital no escuro (lado noturno do planeta)." },
+            { id: 43, cat: "hard", text: "Fazer acoplagem orbital utilizando apenas propulsores RCS (sem motor principal)." },
+            { id: 44, cat: "hard", text: "Pousar em Io (lua de Júpiter) e retornar com a nave para a Terra." },
+            { id: 45, cat: "hard", text: "Pousar em Vênus e decolar da superfície para retornar à Terra vivo." },
+            { id: 46, cat: "hard", text: "Fazer um pouso cego na Lua (guiando-se apenas pelos dados numéricos de velocidade e altitude)." },
+            { id: 47, cat: "hard", text: "Pousar na Lua utilizando apenas motores virados para cima (inverter a nave na descida)." },
+            { id: 48, cat: "hard", text: "Realizar um pouso de precisão no topo da montanha mais alta de Marte." },
+            { id: 49, cat: "hard", text: "Construir um foguete totalmente assimétrico que consiga manter voo estável até o espaço." },
+            { id: 50, cat: "hard", text: "Chegar à órbita solar profunda e aproximar-se do Sol até o limite de fusão das peças." },
+            { id: 51, cat: "hard", text: "Fazer um resgate no espaço: buscar uma cápsula descontrolada sem combustível em órbita de Vênus." },
+            { id: 52, cat: "hard", text: "Construir um rover com rampa e fazer um salto mortal em uma cratera da Lua." },
+            { id: 53, cat: "hard", text: "Pousar em Europa (lua de Júpiter) e retornar à Terra sem reabastecer." },
+            { id: 54, cat: "hard", text: "Pousar em Mercúrio no lado diurno enfrentando gravidade e aceleração solar extrema." },
+            { id: 55, cat: "hard", text: "Executar o Tour do Sistema Solar: visitar a Terra, Lua, Marte e Vênus em um único voo." },
+            { id: 56, cat: "hard", text: "Fazer um pouso na Terra exatamente em cima da plataforma de lançamento sem danificar nada." },
+            { id: 57, cat: "hard", text: "Criar um foguete reutilizável estilo Falcon 9: pousar o booster de volta na base." },
+            { id: 58, cat: "hard", text: "Enviar uma sonda para fora do Sistema Solar atingindo a velocidade de escape solar máxima." },
+            { id: 59, cat: "hard", text: "Colocar uma estrutura pesada de 200 toneladas em órbita com um único lançamento." },
+            { id: 60, cat: "hard", text: "Fazer acoplagem de duas naves enquanto ambas estão na fase final de reentrada atmosférica." },
+            { id: 61, cat: "hard", text: "Montar um foguete gigante no espaço juntando 4 partes separadas enviadas em voos diferentes." },
+            { id: 62, cat: "hard", text: "Visitar todas as 4 luas principais de Júpiter em uma única missão." },
+            { id: 63, cat: "hard", text: "Completar a missão de Marte sem usar nenhum tipo de controle RCS durante todo o trajeto." },
+            { id: 64, cat: "hard", text: "Pousar na superfície de Ganímedes com uma nave de grande porte." },
+            { id: 65, cat: "hard", text: "Decolar da Terra e atingir órbita utilizando apenas aceleradores a combustível sólido (Boosters)." },
+            { id: 66, cat: "hard", text: "Pousar na Terra utilizando os últimos 1% de combustível para suavizar o toque no chão." },
+            { id: 67, cat: "hard", text: "O Desafio Supremo: Pousar na Lua, Marte e Vênus e retornar à Terra com a mesma cápsula." },
+
+            // REALISTA (33)
+            { id: 68, cat: "realist", text: "Simular a missão Apollo 11 completa: Módulo de Comando + Módulo Lunar + Acoplagem em órbita." },
+            { id: 69, cat: "realist", text: "Colocar um satélite em órbita polar perfeitamente alinhada a 90° ao redor da Terra." },
+            { id: 70, cat: "realist", text: "Fazer uma manobra de Aerobraking em Vênus para economizar combustível ao circularizar." },
+            { id: 71, cat: "realist", text: "Construir uma Estação Espacial Modular em órbita baixa com 3 módulos acoplados." },
+            { id: 72, cat: "realist", text: "Usar a assistência gravitacional de Vênus para alterar a trajetória rumo a Mercúrio." },
+            { id: 73, cat: "realist", text: "Montar uma constelação de 4 satélites de comunicação equidistantes em órbita geoestacionária." },
+            { id: 74, cat: "realist", text: "Construir um Posto de Reabastecimento Orbital na Terra e abastecer uma nave antes de ir a Marte." },
+            { id: 75, cat: "realist", text: "Fazer o descarte realista de todos os estágios vazios lançando-os em direção à atmosfera." },
+            { id: 76, cat: "realist", text: "Desenvolver um Rover de Exploração funcional para coletar dados em uma cratera de Marte." },
+            { id: 77, cat: "realist", text: "Simular um pouso estilo Sky-Crane (guindaste voador) para pousar um rover em Marte." },
+            { id: 78, cat: "realist", text: "Construir um Telescópio Espacial gigante e posicioná-lo em uma órbita alta e estável." },
+            { id: 79, cat: "realist", text: "Colocar um satélite em órbita circular perfeita com margem de erro de apenas 0.1 km no Ap/Pe." },
+            { id: 80, cat: "realist", text: "Construir uma Base Fixa na superfície de Marte composta por 2 módulos interligados." },
+            { id: 81, cat: "realist", text: "Usar a gravidade de Júpiter para arremessar uma sonda rumo ao espaço profundo (Estilo Voyager)." },
+            { id: 82, cat: "realist", text: "Fazer o lançamento de um foguete de múltiplos estágios com separação aerodinâmica de carenagens." },
+            { id: 83, cat: "realist", text: "Simular a missão Artemis: enviar um módulo à órbita lunar e efetuar pouso tripulado de retorno." },
+            { id: 84, cat: "realist", text: "Criar um Rebocador Espacial movido a propulsão iônica para transferir cargas entre órbitas." },
+            { id: 85, cat: "realist", text: "Fazer uma reentrada atmosférica na Terra com ângulo correto para evitar queima por superaquecimento." },
+            { id: 86, cat: "realist", text: "Construir uma estação científica permanente em órbita da Lua." },
+            { id: 87, cat: "realist", text: "Manter uma sonda em órbita solar exatamente no ponto de transferência entre a Terra e Marte." },
+            { id: 88, cat: "realist", text: "Lançar uma frota de 3 sondas de pesquisa para alvos diferentes em um único lançamento pesado." },
+            { id: 89, cat: "realist", text: "Realizar acoplagem precisa entre o Módulo de Serviço e o Módulo de Pouso em órbita marciana." },
+            { id: 90, cat: "realist", text: "Pousar um módulo de pesquisas na superfície de Vênus equipado com escudos térmicos duplos." },
+            { id: 91, cat: "realist", text: "Enviar um satélite de mapeamento para orbitar Fobos e Deimos consecutivamente." },
+            { id: 92, cat: "realist", text: "Lançar uma sonda de observação solar com aproximação progressiva por janelas de transferência." },
+            { id: 93, cat: "realist", text: "Montar um módulo habitacional na superfície da Lua alimentado por painéis solares retráteis." },
+            { id: 94, cat: "realist", text: "Realizar uma missão de amostragem: pousar na Lua, recolher módulo e acoplar à nave de retorno." },
+            { id: 95, cat: "realist", text: "Fazer uma manobra de frenagem aerodinâmica suave na atmosfera de Marte para economizar propelente." },
+            { id: 96, cat: "realist", text: "Entrar em órbita retrógrada sincronizada ao redor da Terra." },
+            { id: 97, cat: "realist", text: "Construir um foguete cargueiro pesado com proporção realista de massa e empuxo (TWR)." },
+            { id: 98, cat: "realist", text: "Posicionar um satélite de retransmissão no lado oculto da Lua." },
+            { id: 99, cat: "realist", text: "Fazer uma missão de resgate em órbita baixa da Terra simulações de emergência da estação." },
+            { id: 100, cat: "realist", text: "Simular uma missão de impacto de asteroide lançando uma sonda pesada contra a superfície da Lua." }
+        ];
+
+        let currentFilter = 'all';
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Atualizar botões
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-filter') === filter) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Reseta caixa se trocar o filtro
+            document.getElementById('challengeNum').innerText = "Filtro Selecionado";
+            document.getElementById('challengeText').innerText = "Clique no botão abaixo para sortear uma missão deste modo!";
+            document.getElementById('challengeBadge').style.display = 'none';
+        }
+
+        function sortearDesafio() {
+            let listaFiltrada = desafios;
+            if (currentFilter !== 'all') {
+                listaFiltrada = desafios.filter(d => d.cat === currentFilter);
+            }
+
+            const index = Math.floor(Math.random() * listaFiltrada.length);
+            const desafio = listaFiltrada[index];
+
+            document.getElementById('challengeNum').innerText = "Desafio #" + desafio.id;
+            document.getElementById('challengeText').innerText = desafio.text;
+
+            const badge = document.getElementById('challengeBadge');
+            badge.style.display = 'inline-block';
+            badge.className = 'badge badge-' + desafio.cat;
+            
+            if (desafio.cat === 'easy') badge.innerText = "Easy";
+            else if (desafio.cat === 'hard') badge.innerText = "Hard";
+            else if (desafio.cat === 'realist') badge.innerText = "Realista";
+
+            // Efeito visual no border da caixa
+            const card = document.getElementById('challengeCard');
+            if (desafio.cat === 'easy') card.style.borderLeftColor = "#238636";
+            else if (desafio.cat === 'hard') card.style.borderLeftColor = "#da3633";
+            else if (desafio.cat === 'realist') card.style.borderLeftColor = "#8957e5";
+        }
+    </script>
+</body>
+</html>
