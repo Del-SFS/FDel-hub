@@ -314,6 +314,40 @@ for(let i = 0; i < 200; i++){
 
     starsContainer.appendChild(star);
 }
+// 🥚 EASTER EGG #2 — SECRET PAGE
+
+const secretCode = [
+    "ArrowUp",
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowLeft",
+    "ArrowRight"
+];
+
+let secretProgress = 0;
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === secretCode[secretProgress]) {
+
+        secretProgress++;
+
+        if (secretProgress === secretCode.length) {
+
+            window.location.href = "/secret/";
+
+            secretProgress = 0;
+        }
+
+    } else {
+
+        secretProgress = 0;
+    }
+
+});
 </script>
 
 </body>
