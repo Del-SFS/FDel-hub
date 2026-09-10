@@ -1,1957 +1,2059 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>🌪️ Tornado Simulator 2.0</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --bg: #070b12;
-            --panel: #111827;
-            --panel2: #0b1220;
-            --line: #263244;
-            --text: #e5e7eb;
-            --muted: #94a3b8;
-            --accent: #38bdf8;
-        }
-
-        body {
-            min-height: 100vh;
-
-            background:
-                radial-gradient(
-                    circle at 50% -10%,
-                    #172033 0,
-                    #070b12 55%
-                );
-
-            color: var(--text);
-
-            font-family:
-                system-ui,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                Roboto,
-                Arial,
-                sans-serif;
-
-            display: flex;
-            justify-content: center;
-
-            padding: 14px;
-
-            overflow: auto;
-        }
-
-        .app {
-            width: min(1100px, 100%);
-
-            display: grid;
-
-            grid-template-columns:
-                minmax(420px, 1fr)
-                330px;
-
-            gap: 14px;
-        }
-
-        .header {
-            grid-column: 1 / -1;
-
-            display: flex;
-
-            justify-content: space-between;
-            align-items: center;
-
-            gap: 10px;
-        }
-
-        h1 {
-            font-size:
-                clamp(1.2rem, 3vw, 1.8rem);
-        }
-
-        .subtitle {
-            color: var(--muted);
-
-            font-size: .85rem;
-
-            margin-top: 3px;
-        }
-
-        .badge {
-            border: 1px solid #334155;
-
-            background: #0f172a;
-
-            padding: 7px 10px;
-
-            border-radius: 999px;
-
-            font-size: .75rem;
-
-            color: #7dd3fc;
-        }
-
-        .card {
-            background:
-                rgba(17, 24, 39, .92);
-
-            border:
-                1px solid var(--line);
-
-            border-radius: 16px;
-
-            box-shadow:
-                0 12px 35px #0008;
-        }
-
-        #worldCard {
-            padding: 10px;
-        }
-
-        #canvasWrap {
-            position: relative;
-
-            width: 100%;
-
-            aspect-ratio: 16 / 10;
-
-            overflow: hidden;
-
-            border-radius: 12px;
-
-            background: #101827;
-        }
-
-        canvas {
-            width: 100%;
-            height: 100%;
-
-            display: block;
-        }
-
-        .overlay {
-            position: absolute;
-
-            left: 10px;
-            top: 10px;
-            right: 10px;
-
-            display: flex;
-
-            justify-content: space-between;
-
-            pointer-events: none;
-
-            font:
-                700 .72rem
-                ui-monospace,
-                monospace;
-        }
-
-        .pill {
-            background: #020617c9;
-
-            border:
-                1px solid #334155;
-
-            border-radius: 8px;
-
-            padding: 6px 8px;
-        }
-
-        #alert {
-            color: #fbbf24;
-        }
-
-        .panel {
-            padding: 14px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 11px;
-        }
-
-        .hud {
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 8px;
-        }
-
-        .stat {
-            background: var(--panel2);
-
-            border:
-                1px solid #263244;
-
-            border-radius: 10px;
-
-            padding: 9px;
-        }
-
-        .stat small {
-            display: block;
-
-            color: var(--muted);
-
-            font-size: .68rem;
-        }
-
-        .stat strong {
-            font-size: 1.02rem;
-        }
-
-        #ef {
-            font-size: 1.4rem;
-        }
-
-        .controls {
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 8px;
-        }
-
-        button,
-        select {
-            border:
-                1px solid #334155;
-
-            background: #182235;
-
-            color: white;
-
-            border-radius: 10px;
-
-            padding: 11px;
-
-            font-weight: 700;
-
-            cursor: pointer;
-        }
-
-        button.primary {
-            background: #0284c7;
-
-            border-color: #38bdf8;
-        }
-
-        button.danger {
-            background: #7f1d1d;
-
-            border-color: #ef4444;
-        }
-
-        button:active {
-            transform: scale(.98);
-        }
-
-        .section {
-            border-top:
-                1px solid #263244;
-
-            padding-top: 10px;
-        }
-
-        .section h2 {
-            font-size: .8rem;
-
-            color: #cbd5e1;
-
-            margin-bottom: 7px;
-        }
-
-        .row {
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            gap: 8px;
-
-            font-size: .8rem;
-        }
-
-        input[type="range"] {
-            width: 100%;
-        }
-
-        .legend {
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
-            gap: 5px;
-        }
-
-        .legend div {
-            font-size: .68rem;
-
-            padding: 6px;
-
-            border-radius: 7px;
-
-            background: #0b1220;
-
-            border:
-                1px solid #263244;
-        }
-
-        .help {
-            color: var(--muted);
-
-            font-size: .73rem;
-
-            line-height: 1.4;
-        }
-
-        #eventLog {
-            height: 125px;
-
-            overflow: auto;
-
-            background: #050a11;
-
-            border:
-                1px solid #1e293b;
-
-            border-radius: 9px;
-
-            padding: 8px;
-
-            font:
-                .68rem
-                ui-monospace,
-                monospace;
-        }
-
-        .logline {
-            margin-bottom: 5px;
-
-            color: #a5b4fc;
-        }
-
-        @media (max-width: 800px) {
-
-            .app {
-                grid-template-columns: 1fr;
-            }
-
-            .header {
-                grid-column: 1;
-            }
-
-            #canvasWrap {
-                aspect-ratio: 4 / 3;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storm Simulator 3.0</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #071018;
+    color: #dceeff;
+    font-family: Consolas, monospace;
+    overflow: hidden;
+}
+
+#app {
+    display: grid;
+    grid-template-columns: 1fr 370px;
+    height: 100vh;
+}
+
+#world {
+    position: relative;
+    background: #0a141c;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+}
+
+#mainCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+#hud {
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    width: 310px;
+    padding: 12px;
+    background: rgba(3, 10, 16, .88);
+    border: 1px solid #31566d;
+    border-radius: 10px;
+    box-shadow: 0 0 25px #000;
+    font-size: 13px;
+    pointer-events: none;
+}
+
+#hud h2 {
+    margin: 0 0 8px;
+    color: #8bd8ff;
+}
+
+.data {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #19313f;
+    padding: 4px 0;
+}
+
+.value {
+    color: #fff;
+}
+
+#panel {
+    background: #0c1720;
+    border-left: 1px solid #294757;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+h1 {
+    margin: 0 0 4px;
+    font-size: 21px;
+    color: #9bddff;
+}
+
+h3 {
+    margin: 16px 0 7px;
+    color: #8bc7e6;
+}
+
+button,
+select,
+input {
+    width: 100%;
+    margin: 4px 0;
+}
+
+button,
+select {
+    background: #122532;
+    border: 1px solid #37647b;
+    color: white;
+    padding: 9px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1b3848;
+}
+
+input[type="range"] {
+    accent-color: #69c9ff;
+}
+
+.box {
+    background: #09131b;
+    border: 1px solid #203b4b;
+    border-radius: 8px;
+    padding: 9px;
+    margin-top: 8px;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+}
+
+.good {
+    color: #7dffad;
+}
+
+.warn {
+    color: #ffd76a;
+}
+
+.bad {
+    color: #ff7777;
+}
+
+#events {
+    max-height: 180px;
+    overflow: auto;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.event {
+    border-bottom: 1px solid #18303c;
+    padding: 3px 0;
+}
+
+#legend {
+    font-size: 10px;
+    color: #91aebd;
+    margin-top: 8px;
+}
+
+@media(max-width: 900px) {
+    #app {
+        grid-template-columns: 1fr;
+    }
+
+    #panel {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 330px;
+        height: 100%;
+        transform: translateX(100%);
+        transition: .2s;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<div class="app">
+<div id="app">
 
-    <header class="header">
+<div id="world">
+    <canvas id="mainCanvas"></canvas>
 
-        <div>
+    <div id="hud">
+        <h2>🌪 STORM SIMULATOR 3.0</h2>
 
-            <h1>
-                🌪️ Tornado Simulator 2.0
-            </h1>
-
-            <div class="subtitle">
-                Simulação procedural • radar • partículas • danos • evolução
-            </div>
-
+        <div class="data">
+            <span>Estado</span>
+            <span id="hPhase" class="value">Formando</span>
         </div>
 
-        <div class="badge">
-            OFFLINE • HTML + JS
+        <div class="data">
+            <span>Tornado</span>
+            <span id="hTornado" class="value">Não</span>
         </div>
 
-    </header>
-
-
-    <!-- MAPA -->
-
-    <section class="card" id="worldCard">
-
-        <div id="canvasWrap">
-
-            <canvas id="canvas"></canvas>
-
-            <div class="overlay">
-
-                <div class="pill" id="alert">
-                    ● MONITORANDO
-                </div>
-
-                <div class="pill" id="clock">
-                    00:00
-                </div>
-
-            </div>
-
+        <div class="data">
+            <span>Intensidade</span>
+            <span id="hEF" class="value">EF0</span>
         </div>
 
-    </section>
-
-
-    <!-- PAINEL -->
-
-    <aside class="card panel">
-
-        <div class="hud">
-
-            <div class="stat">
-
-                <small>
-                    CLASSIFICAÇÃO
-                </small>
-
-                <strong id="ef">
-                    --
-                </strong>
-
-            </div>
-
-
-            <div class="stat">
-
-                <small>
-                    VENTO ESTIMADO
-                </small>
-
-                <strong id="wind">
-                    0 km/h
-                </strong>
-
-            </div>
-
-
-            <div class="stat">
-
-                <small>
-                    DURAÇÃO
-                </small>
-
-                <strong id="duration">
-                    00:00
-                </strong>
-
-            </div>
-
-
-            <div class="stat">
-
-                <small>
-                    DISTÂNCIA
-                </small>
-
-                <strong id="distance">
-                    0 m
-                </strong>
-
-            </div>
-
-
-            <div class="stat">
-
-                <small>
-                    OBJETOS ATINGIDOS
-                </small>
-
-                <strong id="hits">
-                    0
-                </strong>
-
-            </div>
-
-
-            <div class="stat">
-
-                <small>
-                    PONTUAÇÃO
-                </small>
-
-                <strong id="score">
-                    0
-                </strong>
-
-            </div>
-
+        <div class="data">
+            <span>Vento estimado</span>
+            <span id="hWind" class="value">0 km/h</span>
         </div>
 
-
-        <!-- CONTROLES -->
-
-        <div class="controls">
-
-            <button
-                class="primary"
-                id="start">
-                🌪️ Novo Tornado
-            </button>
-
-            <button id="pause">
-                ⏸️ Pausar
-            </button>
-
-            <button id="reset">
-                ↻ Limpar Mapa
-            </button>
-
-            <button id="lightning">
-                ⚡ Tempestade
-            </button>
-
+        <div class="data">
+            <span>CAPE</span>
+            <span id="hCape" class="value">0 J/kg</span>
         </div>
 
-
-        <!-- INTENSIDADE -->
-
-        <div class="section">
-
-            <h2>
-                INTENSIDADE INICIAL
-            </h2>
-
-            <select id="initial">
-
-                <option value="random">
-                    Aleatória
-                </option>
-
-                <option value="0">
-                    EF0
-                </option>
-
-                <option value="1">
-                    EF1
-                </option>
-
-                <option value="2">
-                    EF2
-                </option>
-
-                <option value="3">
-                    EF3
-                </option>
-
-                <option value="4">
-                    EF4
-                </option>
-
-                <option value="5">
-                    EF5
-                </option>
-
-            </select>
-
+        <div class="data">
+            <span>Cisalhamento</span>
+            <span id="hShear" class="value">0 m/s</span>
         </div>
 
-
-        <!-- AMBIENTE -->
-
-        <div class="section">
-
-            <h2>
-                AMBIENTE
-            </h2>
-
-            <div class="row">
-
-                <span>
-                    Velocidade da simulação
-                </span>
-
-                <b id="speedText">
-                    1.0x
-                </b>
-
-            </div>
-
-            <input
-                id="speed"
-                type="range"
-                min=".4"
-                max="2.5"
-                step=".1"
-                value="1">
-
-
-            <div class="row">
-
-                <span>
-                    Chuva
-                </span>
-
-                <input
-                    id="rain"
-                    type="checkbox"
-                    checked>
-
-            </div>
-
-
-            <div class="row">
-
-                <span>
-                    Grade do radar
-                </span>
-
-                <input
-                    id="grid"
-                    type="checkbox"
-                    checked>
-
-            </div>
-
+        <div class="data">
+            <span>Pressão</span>
+            <span id="hPressure" class="value">1013 hPa</span>
         </div>
 
-
-        <!-- ESCALA -->
-
-        <div class="section">
-
-            <h2>
-                ESCALA EF — VISUAL
-            </h2>
-
-            <div class="legend">
-
-                <div>
-                    EF0<br>
-                    105–137
-                </div>
-
-                <div>
-                    EF1<br>
-                    138–177
-                </div>
-
-                <div>
-                    EF2<br>
-                    178–217
-                </div>
-
-                <div>
-                    EF3<br>
-                    218–266
-                </div>
-
-                <div>
-                    EF4<br>
-                    267–322
-                </div>
-
-                <div>
-                    EF5<br>
-                    323+
-                </div>
-
-            </div>
-
+        <div class="data">
+            <span>Tempo</span>
+            <span id="hTime" class="value">00:00</span>
         </div>
+    </div>
+</div>
 
+<div id="panel">
 
-        <!-- LOG -->
+<h1>STORM LAB</h1>
+<div style="font-size:11px;color:#7795a5">
+> laboratório meteorológico virtual
+</div>
 
-        <div class="section">
+<h3>SIMULAÇÃO</h3>
 
-            <h2>
-                REGISTRO DO EVENTO
-            </h2>
+<button onclick="newStorm()">🌩 Nova tempestade</button>
+<button onclick="togglePause()">⏯ Pausar</button>
+<button onclick="resetWorld()">♻ Resetar mapa</button>
 
-            <div id="eventLog"></div>
+<select id="environment">
+    <option value="classic">Ambiente clássico</option>
+    <option value="volatile">Ambiente altamente instável</option>
+    <option value="dryline">Dryline</option>
+    <option value="lowCape">Baixo CAPE / alto shear</option>
+</select>
 
-        </div>
+<label>Velocidade da simulação</label>
+<input id="speed" type="range" min=".1" max="4" value="1" step=".1">
 
+<h3>ATMOSFERA</h3>
 
-        <p class="help">
+<div class="box">
+    <div class="stat">
+        <span>Temperatura</span>
+        <span id="temp">27°C</span>
+    </div>
 
-            Dica: o tornado evolui gradualmente.
-            A escala EF é usada aqui como mecânica
-            visual de simulação; na meteorologia real,
-            a escala Enhanced Fujita é baseada
-            principalmente em evidências de danos.
+    <div class="stat">
+        <span>Ponto de orvalho</span>
+        <span id="dew">21°C</span>
+    </div>
 
-        </p>
+    <div class="stat">
+        <span>Umidade</span>
+        <span id="humidity">72%</span>
+    </div>
 
-    </aside>
+    <div class="stat">
+        <span>Pressão</span>
+        <span id="pressure">1013 hPa</span>
+    </div>
+
+    <div class="stat">
+        <span>CAPE</span>
+        <span id="cape">1500 J/kg</span>
+    </div>
+
+    <div class="stat">
+        <span>CIN</span>
+        <span id="cin">-50 J/kg</span>
+    </div>
+
+    <div class="stat">
+        <span>LCL</span>
+        <span id="lcl">900 m</span>
+    </div>
+
+    <div class="stat">
+        <span>LFC</span>
+        <span id="lfc">1200 m</span>
+    </div>
+
+    <div class="stat">
+        <span>Shear 0–6 km</span>
+        <span id="shear">20 m/s</span>
+    </div>
+</div>
+
+<h3>SUPERCÉLULA</h3>
+
+<div class="box">
+
+    <div class="stat">
+        <span>Updraft</span>
+        <span id="updraft">0 m/s</span>
+    </div>
+
+    <div class="stat">
+        <span>Downdraft</span>
+        <span id="downdraft">0 m/s</span>
+    </div>
+
+    <div class="stat">
+        <span>Mesociclone</span>
+        <span id="meso">Fraco</span>
+    </div>
+
+    <div class="stat">
+        <span>Rotação</span>
+        <span id="rotation">0 rad/s</span>
+    </div>
+
+    <div class="stat">
+        <span>Influxo</span>
+        <span id="inflow">0 km/h</span>
+    </div>
+
+    <div class="stat">
+        <span>Outflow</span>
+        <span id="outflow">0 km/h</span>
+    </div>
 
 </div>
 
+<h3>TORNADO</h3>
+
+<div class="box">
+
+    <div class="stat">
+        <span>Largura</span>
+        <span id="width">0 m</span>
+    </div>
+
+    <div class="stat">
+        <span>Velocidade de translação</span>
+        <span id="movement">0 km/h</span>
+    </div>
+
+    <div class="stat">
+        <span>Rotação</span>
+        <span id="tRotation">0 km/h</span>
+    </div>
+
+    <div class="stat">
+        <span>Subvórtices</span>
+        <span id="subvortices">0</span>
+    </div>
+
+    <div class="stat">
+        <span>Distância</span>
+        <span id="distance">0 km</span>
+    </div>
+
+</div>
+
+<h3>RADAR</h3>
+
+<select id="radarMode">
+    <option value="normal">Mapa</option>
+    <option value="reflectivity">Refletividade</option>
+    <option value="velocity">Velocidade radial</option>
+    <option value="rotation">Rotação</option>
+    <option value="hook">Hook Echo</option>
+</select>
+
+<button onclick="toggleRadar()">📡 Radar ON/OFF</button>
+
+<h3>SENSORES</h3>
+
+<button onclick="deployProbe()">📍 Implantar sonda</button>
+<button onclick="deployStation()">🌡 Estação meteorológica</button>
+
+<div class="box">
+
+    <div class="stat">
+        <span>Sondas</span>
+        <span id="probeCount">0</span>
+    </div>
+
+    <div class="stat">
+        <span>Estações</span>
+        <span id="stationCount">0</span>
+    </div>
+
+    <div class="stat">
+        <span>Dados coletados</span>
+        <span id="samples">0</span>
+    </div>
+
+</div>
+
+<h3>EVENTOS</h3>
+
+<div id="events"></div>
+
+<div id="legend">
+    CAPE/CIN, LCL, LFC, cisalhamento, mesociclone,
+    refletividade e velocidade são modelos simplificados
+    para fins educacionais.
+</div>
+
+</div>
+</div>
 
 <script>
 
-"use strict";
-
-
 /* =========================================================
-   CONFIGURAÇÃO
-========================================================= */
+   STORM SIMULATOR 3.0
+   ========================================================= */
 
-const canvas =
-    document.getElementById("canvas");
+/* ---------- CANVAS ---------- */
 
-const ctx =
-    canvas.getContext("2d");
+const canvas = document.getElementById("mainCanvas");
+const ctx = canvas.getContext("2d");
 
-const wrap =
-    document.getElementById("canvasWrap");
-
-
-const EF = [
-
-    {
-        name: "EF0",
-        min: 105,
-        max: 137,
-        color: "#60a5fa",
-        radius: 13
-    },
-
-    {
-        name: "EF1",
-        min: 138,
-        max: 177,
-        color: "#34d399",
-        radius: 18
-    },
-
-    {
-        name: "EF2",
-        min: 178,
-        max: 217,
-        color: "#fbbf24",
-        radius: 25
-    },
-
-    {
-        name: "EF3",
-        min: 218,
-        max: 266,
-        color: "#fb923c",
-        radius: 34
-    },
-
-    {
-        name: "EF4",
-        min: 267,
-        max: 322,
-        color: "#f87171",
-        radius: 45
-    },
-
-    {
-        name: "EF5",
-        min: 323,
-        max: 450,
-        color: "#ec4899",
-        radius: 58
-    }
-
-];
-
-
-/* =========================================================
-   VARIÁVEIS
-========================================================= */
-
-let W = 900;
-let H = 560;
-
-let dpr = 1;
-
-let running = false;
-let paused = false;
-
-let stormTime = 0;
-
-let last = 0;
-
-let tornado = null;
-
-let particles = [];
-
-let debris = [];
-
-let rain = [];
-
-let objects = [];
-
-let damage = null;
-
-let hits = 0;
-
-let score = 0;
-
-let distance = 0;
-
-let lightningTimer = 0;
-
-let flash = 0;
-
-let speed = 1;
-
-
-/* =========================================================
-   ATALHOS
-========================================================= */
-
-const $ = id =>
-    document.getElementById(id);
-
-
-function clamp(value, min, max) {
-
-    return Math.max(
-        min,
-        Math.min(max, value)
-    );
-
-}
-
-
-function rand(min, max) {
-
-    return Math.random() *
-        (max - min) +
-        min;
-
-}
-
-
-function randInt(min, max) {
-
-    return Math.floor(
-        rand(min, max + 1)
-    );
-
-}
-
-
-function choose(array) {
-
-    return array[
-        Math.floor(
-            Math.random() *
-            array.length
-        )
-    ];
-
-}
-
-
-/* =========================================================
-   TEMPO
-========================================================= */
-
-function formatTime(time) {
-
-    const seconds =
-        Math.floor(time);
-
-    return (
-        String(
-            Math.floor(seconds / 60)
-        ).padStart(2, "0")
-        +
-        ":"
-        +
-        String(
-            seconds % 60
-        ).padStart(2, "0")
-    );
-
-}
-
-
-/* =========================================================
-   REDIMENSIONAMENTO
-========================================================= */
+let W = 1000;
+let H = 700;
 
 function resize() {
-
-    dpr =
-        Math.min(
-            window.devicePixelRatio || 1,
-            2
-        );
-
-
-    const rect =
-        wrap.getBoundingClientRect();
-
-
-    W =
-        Math.max(
-            420,
-            rect.width
-        );
-
-
-    H =
-        Math.max(
-            300,
-            rect.height
-        );
-
-
-    canvas.width =
-        W * dpr;
-
-    canvas.height =
-        H * dpr;
-
+    W = canvas.width = canvas.clientWidth * devicePixelRatio;
+    H = canvas.height = canvas.clientHeight * devicePixelRatio;
 
     ctx.setTransform(
-        dpr,
+        devicePixelRatio,
         0,
         0,
-        dpr,
-        0,
-        0
-    );
-
-
-    if (damage) {
-
-        rebuildDamage();
-
-    }
-
-}
-
-
-window.addEventListener(
-    "resize",
-    resize
-);
-
-
-/* =========================================================
-   MAPA
-========================================================= */
-
-function makeTerrain() {
-
-    objects = [];
-
-
-    const types = [
-
-        "🏠",
-        "🏠",
-        "🌲",
-        "🌲",
-        "🌲",
-        "🚗",
-        "🚜",
-        "📡",
-        "🏚️"
-
-    ];
-
-
-    for (
-        let i = 0;
-        i < 28;
-        i++
-    ) {
-
-        objects.push({
-
-            x: rand(
-                35,
-                W - 35
-            ),
-
-            y: rand(
-                75,
-                H - 35
-            ),
-
-            type: choose(types),
-
-            alive: true,
-
-            size: rand(
-                12,
-                20
-            ),
-
-            spin: rand(
-                0,
-                Math.PI * 2
-            )
-
-        });
-
-    }
-
-}
-
-
-/* =========================================================
-   TERRENO / DANO
-========================================================= */
-
-function rebuildDamage() {
-
-    damage =
-        document.createElement(
-            "canvas"
-        );
-
-
-    damage.width =
-        W * dpr;
-
-    damage.height =
-        H * dpr;
-
-
-    const d =
-        damage.getContext("2d");
-
-
-    d.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
+        devicePixelRatio,
         0,
         0
     );
 
+    W = canvas.clientWidth;
+    H = canvas.clientHeight;
+}
 
-    d.fillStyle =
-        "#18251e";
-
-    d.fillRect(
-        0,
-        0,
-        W,
-        H
-    );
+window.addEventListener("resize", resize);
+resize();
 
 
-    for (
-        let i = 0;
-        i < 300;
-        i++
-    ) {
+/* ---------- UTIL ---------- */
 
-        d.fillStyle =
-            Math.random() > .5
-                ? "#1c2c23"
-                : "#17231d";
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
+const lerp = (a, b, t) => a + (b - a) * t;
 
-        d.fillRect(
+const rand = (a, b) => Math.random() * (b - a) + a;
 
-            rand(0, W),
+const dist = (a,b,c,d) =>
+    Math.hypot(a-c,b-d);
 
-            rand(0, H),
+function formatTime(seconds) {
 
-            rand(2, 9),
+    let m = Math.floor(seconds / 60);
+    let s = Math.floor(seconds % 60);
 
-            rand(2, 9)
-
-        );
-
-    }
-
+    return String(m).padStart(2,"0") +
+        ":" +
+        String(s).padStart(2,"0");
 }
 
 
-/* =========================================================
-   LOG
-========================================================= */
+/* ---------- ATMOSPHERE ---------- */
 
-function addLog(text) {
+const atmosphere = {
 
-    const line =
-        document.createElement(
-            "div"
-        );
+    temperature: 27,
+    dewpoint: 21,
+    humidity: 72,
 
+    pressure: 1013,
 
-    line.className =
-        "logline";
+    cape: 1500,
+    cin: -50,
 
+    lcl: 900,
+    lfc: 1200,
 
-    line.textContent =
-        `[${formatTime(stormTime)}] ${text}`;
+    shear: 20,
 
+    surfaceWind: {
+        x: 8,
+        y: 2
+    },
 
-    $("eventLog")
-        .prepend(line);
+    upperWind: {
+        x: 24,
+        y: -7
+    },
 
+    update() {
 
-    while (
-        $("eventLog").children.length > 25
-    ) {
+        const env =
+            document.getElementById("environment").value;
 
-        $("eventLog")
-            .lastChild
-            .remove();
+        if(env === "volatile") {
 
-    }
+            this.temperature = 29 + Math.sin(simTime*.01)*2;
+            this.dewpoint = 23;
+            this.cape = 2200 + Math.sin(simTime*.02)*500;
+            this.cin = -30;
+            this.shear = 28;
 
-}
+        } else if(env === "dryline") {
 
+            this.temperature = 31;
+            this.dewpoint = 19;
+            this.cape = 1900;
+            this.cin = -70;
+            this.shear = 24;
 
-/* =========================================================
-   RESET
-========================================================= */
+        } else if(env === "lowCape") {
 
-function resetWorld() {
+            this.temperature = 24;
+            this.dewpoint = 20;
+            this.cape = 800;
+            this.cin = -20;
+            this.shear = 38;
 
-    if (running) {
+        } else {
 
-        addLog(
-            "Simulação encerrada."
-        );
+            this.temperature =
+                27 + Math.sin(simTime*.008);
 
-    }
+            this.dewpoint =
+                21 + Math.sin(simTime*.006);
 
+            this.cape =
+                1500 +
+                Math.sin(simTime*.015)*300;
 
-    running = false;
-
-    paused = false;
-
-    stormTime = 0;
-
-    distance = 0;
-
-    hits = 0;
-
-    score = 0;
-
-    flash = 0;
-
-
-    particles = [];
-
-    debris = [];
-
-    rain = [];
-
-
-    makeTerrain();
-
-    rebuildDamage();
-
-
-    $("pause").textContent =
-        "⏸️ Pausar";
-
-
-    $("eventLog").innerHTML =
-        "";
-
-
-    $("alert").textContent =
-        "● MONITORANDO";
-
-
-    updateHUD();
-
-    draw();
-
-}
-
-
-/* =========================================================
-   CRIAR TORNADO
-========================================================= */
-
-function startStorm() {
-
-    const selected =
-        $("initial").value;
-
-
-    let level;
-
-
-    if (
-        selected === "random"
-    ) {
-
-        level =
-            Math.floor(
-                rand(0, 6)
-            );
-
-    } else {
-
-        level =
-            Number(selected);
-
-    }
-
-
-    const e =
-        EF[level];
-
-
-    tornado = {
-
-        x: 70,
-
-        y: H * .55,
-
-        vx: rand(75, 105),
-
-        vy: 0,
-
-        level: level,
-
-        targetLevel: level,
-
-        radius: e.radius,
-
-        age: 0,
-
-        seed: Math.random() * 1000
-
-    };
-
-
-    running = true;
-
-    paused = false;
-
-    stormTime = 0;
-
-    distance = 0;
-
-    hits = 0;
-
-    score = 0;
-
-
-    particles = [];
-
-    debris = [];
-
-    rain = [];
-
-
-    for (
-        let i = 0;
-        i < 130;
-        i++
-    ) {
-
-        particles.push(
-            makeDustParticle()
-        );
-
-    }
-
-
-    for (
-        let i = 0;
-        i < 180;
-        i++
-    ) {
-
-        rain.push({
-
-            x: rand(0, W),
-
-            y: rand(0, H),
-
-            vx: rand(-25, 10),
-
-            vy: rand(250, 430)
-
-        });
-
-    }
-
-
-    addLog(
-        `Tornado ${e.name} detectado.`
-    );
-
-
-    addLog(
-        `Vento estimado: ${randInt(
-            e.min,
-            e.max
-        )} km/h.`
-    );
-
-
-    $("alert").textContent =
-        "● TORNADO NO SOLO";
-
-
-    $("pause").textContent =
-        "⏸️ Pausar";
-
-
-    updateHUD();
-
-}
-
-
-/* =========================================================
-   PARTÍCULA
-========================================================= */
-
-function makeDustParticle() {
-
-    return {
-
-        a: rand(
-            0,
-            Math.PI * 2
-        ),
-
-        r: rand(
-            8,
-            80
-        ),
-
-        z: rand(
-            .3,
-            1
-        ),
-
-        life: rand(
-            1,
-            5
-        ),
-
-        speed: rand(
-            2.5,
-            7
-        )
-
-    };
-
-}
-
-
-/* =========================================================
-   EVOLUÇÃO
-========================================================= */
-
-function evolve(dt) {
-
-    if (!tornado)
-        return;
-
-
-    tornado.age += dt;
-
-
-    /*
-       O tornado não muda de EF
-       loucamente a cada frame.
-
-       A evolução acontece lentamente.
-    */
-
-    if (
-        Math.random()
-        <
-        dt * .055
-    ) {
-
-        let direction =
-            Math.random() < .55
-                ? 1
-                : -1;
-
-
-        /*
-           No começo existe uma
-           pequena tendência de fortalecimento.
-        */
-
-        if (
-            tornado.age < 9
-        ) {
-
-            direction = 1;
-
+            this.cin = -50;
+            this.shear = 20;
         }
 
-
-        /*
-           Depois de bastante tempo,
-           existe maior chance de enfraquecer.
-        */
-
-        if (
-            tornado.age > 35 &&
-            Math.random() < .65
-        ) {
-
-            direction = -1;
-
-        }
-
-
-        tornado.targetLevel =
+        this.humidity =
             clamp(
-                tornado.level +
-                direction,
-                0,
-                5
+                100 -
+                (this.temperature - this.dewpoint)*6,
+                30,
+                100
             );
 
+        /*
+           Aproximação didática do LCL.
+        */
+
+        this.lcl =
+            Math.max(
+                100,
+                125 * (this.temperature - this.dewpoint)
+            );
+
+        this.lfc =
+            this.lcl + 300;
+
+        this.pressure =
+            1013 -
+            storm.mesoStrength * 7;
+
+        this.surfaceWind.x =
+            8 + Math.sin(simTime*.01)*3;
+
+        this.surfaceWind.y =
+            2 + Math.cos(simTime*.008)*2;
+
+        this.upperWind.x =
+            20 + this.shear*.6;
+
+        this.upperWind.y =
+            -5 - this.shear*.1;
     }
+};
 
 
-    /*
-       Transição suave.
-    */
+/* ---------- WORLD ---------- */
 
-    if (
-        tornado.level !==
-        tornado.targetLevel
-    ) {
+const world = {
 
-        tornado.level +=
+    roads: [],
+    buildings: [],
+    trees: [],
+    cars: [],
+    fields: [],
+    damage: [],
 
-            Math.sign(
-                tornado.targetLevel -
-                tornado.level
-            )
+    generate() {
 
-            *
-            dt
-            *
-            .23;
+        this.roads = [];
+        this.buildings = [];
+        this.trees = [];
+        this.cars = [];
+        this.fields = [];
+        this.damage = [];
 
+        for(let i=0;i<9;i++) {
 
-        if (
-            Math.abs(
-                tornado.level -
-                tornado.targetLevel
-            ) < .03
-        ) {
-
-            tornado.level =
-                tornado.targetLevel;
-
+            this.roads.push({
+                x: rand(0,W),
+                y: rand(0,H),
+                w: rand(50,120),
+                h: rand(8,18)
+            });
         }
 
+        for(let i=0;i<90;i++) {
+
+            this.buildings.push({
+                x: rand(40,W-40),
+                y: rand(40,H-40),
+                size: rand(7,13),
+                alive: true
+            });
+        }
+
+        for(let i=0;i<130;i++) {
+
+            this.trees.push({
+                x: rand(0,W),
+                y: rand(0,H),
+                r: rand(3,6),
+                alive: true
+            });
+        }
+
+        for(let i=0;i<15;i++) {
+
+            this.cars.push({
+                x: rand(0,W),
+                y: rand(0,H),
+                alive: true
+            });
+        }
+    },
+
+    draw() {
+
+        ctx.fillStyle = "#10261d";
+        ctx.fillRect(0,0,W,H);
+
+        /* campos */
+
+        for(let x=0;x<W;x+=80) {
+
+            for(let y=0;y<H;y+=80) {
+
+                ctx.strokeStyle = "rgba(40,90,55,.18)";
+                ctx.strokeRect(x,y,80,80);
+            }
+        }
+
+        /* rios */
+
+        ctx.beginPath();
+        ctx.moveTo(0,H*.75);
+
+        for(let x=0;x<W;x+=50) {
+
+            ctx.lineTo(
+                x,
+                H*.75 + Math.sin(x*.02)*35
+            );
+        }
+
+        ctx.strokeStyle = "#174d67";
+        ctx.lineWidth = 28;
+        ctx.stroke();
+
+        /* estradas */
+
+        for(const r of this.roads) {
+
+            ctx.fillStyle = "#283438";
+            ctx.fillRect(r.x,r.y,r.w,r.h);
+        }
+
+        /* prédios */
+
+        for(const b of this.buildings) {
+
+            if(!b.alive) continue;
+
+            ctx.fillStyle = "#8e8774";
+
+            ctx.fillRect(
+                b.x-b.size/2,
+                b.y-b.size/2,
+                b.size,
+                b.size
+            );
+        }
+
+        /* árvores */
+
+        for(const t of this.trees) {
+
+            if(!t.alive) continue;
+
+            ctx.fillStyle = "#1d6b35";
+
+            ctx.beginPath();
+            ctx.arc(t.x,t.y,t.r,0,Math.PI*2);
+            ctx.fill();
+        }
+
+        /* carros */
+
+        for(const c of this.cars) {
+
+            if(!c.alive) continue;
+
+            ctx.fillStyle = "#aeb9bd";
+
+            ctx.fillRect(
+                c.x-4,
+                c.y-2,
+                8,
+                4
+            );
+        }
+
+        /* dano */
+
+        for(const d of this.damage) {
+
+            ctx.fillStyle =
+                `rgba(80,55,35,${d.a})`;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                d.x,
+                d.y,
+                d.r,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+        }
+    }
+};
+
+
+/* ---------- STORM ---------- */
+
+const storm = {
+
+    x: 0,
+    y: 0,
+
+    vx: 0,
+    vy: 0,
+
+    age: 0,
+
+    phase: "forming",
+
+    updraft: 0,
+    downdraft: 0,
+
+    mesoStrength: 0,
+    rotation: 0,
+
+    inflow: 0,
+    outflow: 0,
+
+    energy: 0,
+
+    tornado: false,
+
+    update(dt) {
+
+        this.age += dt;
+
+        /*
+           Energia da tempestade.
+        */
+
+        const instability =
+            atmosphere.cape / 2500;
+
+        const shear =
+            atmosphere.shear / 40;
+
+        const moisture =
+            atmosphere.humidity / 100;
+
+        this.energy =
+            clamp(
+                instability*.4 +
+                shear*.4 +
+                moisture*.2,
+                0,
+                1
+            );
+
+        /*
+           Desenvolvimento convectivo.
+        */
+
+        this.updraft =
+            this.energy * 65;
+
+        this.downdraft =
+            this.energy * 35;
+
+        this.mesoStrength =
+            clamp(
+                this.energy *
+                (atmosphere.shear/25),
+                0,
+                1.5
+            );
+
+        this.rotation =
+            this.mesoStrength * .18;
+
+        this.inflow =
+            this.mesoStrength * 95;
+
+        this.outflow =
+            this.downdraft * 2;
+
+        /*
+           Ciclo de vida.
+        */
+
+        if(this.age < 8) {
+
+            this.phase = "forming";
+
+        } else if(this.mesoStrength < .35) {
+
+            this.phase = "ordinary";
+
+        } else if(this.mesoStrength < .75) {
+
+            this.phase = "supercell";
+
+        } else {
+
+            this.phase = "mature";
+        }
+
+        /*
+           Movimento com steering winds.
+        */
+
+        const targetVX =
+            atmosphere.upperWind.x*.05;
+
+        const targetVY =
+            atmosphere.upperWind.y*.05;
+
+        this.vx =
+            lerp(this.vx,targetVX,.015);
+
+        this.vy =
+            lerp(this.vy,targetVY,.015);
+
+        this.x += this.vx * dt * 60;
+        this.y += this.vy * dt * 60;
+
+        if(this.x > W+100) this.x = -100;
+        if(this.y > H+100) this.y = -100;
+        if(this.y < -100) this.y = H+100;
+
+        /*
+           Condição simplificada de tornado.
+        */
+
+        const tornadoChance =
+            this.energy > .62 &&
+            this.mesoStrength > .72 &&
+            atmosphere.lcl < 1500 &&
+            atmosphere.shear > 18;
+
+        if(tornadoChance && !this.tornado) {
+
+            if(Math.random() < .006) {
+
+                this.tornado = true;
+                tornado.start();
+
+                addEvent(
+                    "⚠ Mesociclone gerou circulação tornádica."
+                );
+            }
+        }
+
+        if(this.tornado) {
+
+            tornado.update(dt);
+
+            if(tornado.life > tornado.maxLife) {
+
+                this.tornado = false;
+
+                addEvent(
+                    "🌪 Tornado perdeu organização e dissipou."
+                );
+            }
+        }
+    }
+};
+
+
+/* ---------- TORNADO ---------- */
+
+const tornado = {
+
+    active:false,
+
+    x:0,
+    y:0,
+
+    life:0,
+    maxLife:150,
+
+    intensity:0,
+    wind:0,
+
+    width:0,
+
+    radius:0,
+
+    vx:0,
+    vy:0,
+
+    subvortices:[],
+
+    debris:[],
+
+    start() {
+
+        this.active = true;
+
+        this.life = 0;
+
+        this.maxLife =
+            rand(70,190);
+
+        this.intensity = .15;
+
+        this.x = storm.x;
+        this.y = storm.y;
+
+        this.vx = storm.vx;
+        this.vy = storm.vy;
+
+        this.subvortices = [];
+
+        const n =
+            Math.random() < .35
+            ? 2
+            : 1;
+
+        for(let i=0;i<n;i++) {
+
+            this.subvortices.push({
+                angle: rand(0,Math.PI*2),
+                radius: rand(10,30),
+                speed: rand(1,3),
+                phase: rand(0,Math.PI*2)
+            });
+        }
+    },
+
+    update(dt) {
+
+        this.life += dt;
+
+        const half =
+            this.maxLife*.5;
+
+        if(this.life < half) {
+
+            this.intensity +=
+                dt*.08;
+
+        } else {
+
+            this.intensity -=
+                dt*.025;
+        }
+
+        this.intensity =
+            clamp(
+                this.intensity,
+                .05,
+                1
+            );
+
+        /*
+           Intensidade não é simplesmente vento real.
+           É uma variável do modelo.
+        */
+
+        this.wind =
+            lerp(
+                90,
+                450,
+                this.intensity
+            );
+
+        this.width =
+            lerp(
+                20,
+                420,
+                this.intensity
+            );
+
+        this.radius =
+            this.width*.5;
+
+        /*
+           Movimento irregular.
+        */
+
+        this.vx +=
+            Math.sin(simTime*.7)*.002;
+
+        this.vy +=
+            Math.cos(simTime*.43)*.002;
+
+        this.x +=
+            this.vx * dt * 60;
+
+        this.y +=
+            this.vy * dt * 60;
+
+        /*
+           Subvórtices.
+        */
+
+        for(const s of this.subvortices) {
+
+            s.angle +=
+                s.speed*dt;
+
+            s.radius =
+                15 +
+                Math.sin(
+                    simTime*2+s.phase
+                )*12;
+        }
+
+        /*
+           Debris visual.
+        */
+
+        if(Math.random() < .7) {
+
+            this.debris.push({
+
+                angle:rand(0,Math.PI*2),
+
+                radius:rand(5,this.radius),
+
+                height:rand(0,1),
+
+                speed:rand(1,4),
+
+                size:rand(1,4)
+            });
+        }
+
+        if(this.debris.length > 450) {
+
+            this.debris.splice(
+                0,
+                this.debris.length-450
+            );
+        }
+
+        damageWorld();
+
+        /*
+           Dissipação.
+        */
+
+        if(this.intensity < .08) {
+
+            this.active = false;
+        }
+    },
+
+    draw() {
+
+        if(!this.active) return;
+
+        /*
+           Circulação de poeira.
+        */
+
+        for(let i=0;i<90;i++) {
+
+            const a =
+                i*.72 +
+                simTime*2;
+
+            const r =
+                this.radius *
+                (0.25 +
+                (i%20)/25);
+
+            const x =
+                this.x +
+                Math.cos(a)*r;
+
+            const y =
+                this.y +
+                Math.sin(a)*r*.45;
+
+            ctx.fillStyle =
+                `rgba(150,130,100,${.02+.05*this.intensity})`;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                2+this.intensity*3,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fill();
+        }
+
+        /*
+           Funil.
+        */
+
+        const topWidth =
+            this.width*.18;
+
+        const bottomWidth =
+            this.width*.48;
+
+        const gradient =
+            ctx.createLinearGradient(
+                this.x,
+                this.y-160,
+                this.x,
+                this.y+30
+            );
+
+        gradient.addColorStop(
+            0,
+            "rgba(160,180,190,.03)"
+        );
+
+        gradient.addColorStop(
+            .5,
+            "rgba(100,110,120,.12)"
+        );
+
+        gradient.addColorStop(
+            1,
+            "rgba(55,45,40,.32)"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            this.x-topWidth,
+            this.y-160
+        );
+
+        ctx.bezierCurveTo(
+            this.x-topWidth*.5,
+            this.y-90,
+            this.x-bottomWidth*.7,
+            this.y-20,
+            this.x-bottomWidth,
+            this.y+25
+        );
+
+        ctx.lineTo(
+            this.x+bottomWidth,
+            this.y+25
+        );
+
+        ctx.bezierCurveTo(
+            this.x+bottomWidth*.7,
+            this.y-20,
+            this.x+topWidth*.5,
+            this.y-90,
+            this.x+topWidth,
+            this.y-160
+        );
+
+        ctx.closePath();
+        ctx.fill();
+
+        /*
+           Núcleo.
+        */
+
+        ctx.strokeStyle =
+            "rgba(220,230,235,.25)";
+
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+
+        for(let a=0;a<Math.PI*8;a+=.1) {
+
+            const r =
+                5 +
+                a*1.8;
+
+            const x =
+                this.x +
+                Math.cos(a+simTime*4)*r;
+
+            const y =
+                this.y +
+                Math.sin(a+simTime*4)*r*.4;
+
+            if(a===0)
+                ctx.moveTo(x,y);
+            else
+                ctx.lineTo(x,y);
+        }
+
+        ctx.stroke();
+
+        /*
+           Subvórtices.
+        */
+
+        for(const s of this.subvortices) {
+
+            const sx =
+                this.x +
+                Math.cos(s.angle) *
+                s.radius;
+
+            const sy =
+                this.y +
+                Math.sin(s.angle) *
+                s.radius*.5;
+
+            ctx.strokeStyle =
+                "rgba(180,190,195,.25)";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                sx,
+                sy,
+                5+this.intensity*10,
+                0,
+                Math.PI*2
+            );
+
+            ctx.stroke();
+        }
+    }
+};
+
+
+/* ---------- DAMAGE ---------- */
+
+function damageWorld() {
+
+    if(!tornado.active) return;
+
+    const r =
+        tornado.radius;
+
+    for(const b of world.buildings) {
+
+        if(
+            b.alive &&
+            dist(
+                b.x,b.y,
+                tornado.x,tornado.y
+            ) < r
+        ) {
+
+            const chance =
+                tornado.intensity*.015;
+
+            if(Math.random() < chance) {
+
+                b.alive = false;
+
+                world.damage.push({
+                    x:b.x,
+                    y:b.y,
+                    r:rand(5,12),
+                    a:.6
+                });
+
+                addEvent(
+                    "🏠 Estrutura afetada pela circulação."
+                );
+            }
+        }
     }
 
+    for(const t of world.trees) {
+
+        if(
+            t.alive &&
+            dist(
+                t.x,t.y,
+                tornado.x,tornado.y
+            ) < r
+        ) {
+
+            if(Math.random() <
+                tornado.intensity*.01) {
+
+                t.alive = false;
+            }
+        }
+    }
+
+    for(const c of world.cars) {
+
+        if(
+            c.alive &&
+            dist(
+                c.x,c.y,
+                tornado.x,tornado.y
+            ) < r
+        ) {
+
+            if(Math.random() <
+                tornado.intensity*.008) {
+
+                c.alive = false;
+            }
+        }
+    }
 }
 
 
-/* =========================================================
-   ATUALIZAÇÃO
-========================================================= */
+/* ---------- RADAR ---------- */
 
-function update(dt) {
+let radarEnabled = false;
 
-    if (
-        !running ||
-        paused ||
-        !tornado
-    ) {
+function toggleRadar() {
 
-        return;
+    radarEnabled = !radarEnabled;
+}
 
+function drawRadar() {
+
+    if(!radarEnabled) return;
+
+    const mode =
+        document.getElementById("radarMode").value;
+
+    ctx.save();
+
+    ctx.globalAlpha = .6;
+
+    /*
+       Radar range.
+    */
+
+    for(let r=80;r<320;r+=80) {
+
+        ctx.strokeStyle =
+            "rgba(70,180,120,.25)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            storm.x,
+            storm.y,
+            r,
+            0,
+            Math.PI*2
+        );
+
+        ctx.stroke();
     }
 
-
-    dt *= speed;
-
-
-    stormTime += dt;
-
-
-    evolve(dt);
-
-
-    const t =
-        tornado.age;
-
-
     /*
-       Movimento horizontal.
+       Varredura.
     */
 
-    tornado.vx =
-        82
-        +
-        tornado.level * 8
-        +
-        Math.sin(
-            t * .45
-        ) * 14;
+    const sweep =
+        simTime*.8;
 
+    ctx.strokeStyle =
+        "rgba(80,255,160,.45)";
 
-    /*
-       Movimento vertical
-       irregular.
-    */
+    ctx.beginPath();
 
-    const wobble =
-
-        Math.sin(
-            t * .8 +
-            tornado.seed
-        ) * 18
-
-        +
-
-        Math.sin(
-            t * 1.73
-        ) * 9;
-
-
-    tornado.vy =
-        wobble * .18;
-
-
-    tornado.x +=
-        tornado.vx * dt;
-
-
-    tornado.y +=
-        tornado.vy * dt;
-
-
-    tornado.y =
-        clamp(
-            tornado.y,
-            75,
-            H - 35
-        );
-
-
-    distance +=
-
-        Math.hypot(
-            tornado.vx,
-            tornado.vy
-        )
-        *
-        dt;
-
-
-    const e =
-        EF[
-            Math.round(
-                tornado.level
-            )
-        ];
-
-
-    const radius =
-
-        e.radius
-        *
-        (
-            .88
-            +
-            Math.sin(
-                t * 5
-            ) * .06
-        );
-
-
-    tornado.radius =
-        radius;
-
-
-    /* =====================================================
-       DANO
-    ===================================================== */
-
-    const dc =
-        damage.getContext("2d");
-
-
-    dc.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
-        0,
-        0
+    ctx.moveTo(
+        storm.x,
+        storm.y
     );
 
+    ctx.lineTo(
+        storm.x +
+        Math.cos(sweep)*350,
+
+        storm.y +
+        Math.sin(sweep)*350
+    );
+
+    ctx.stroke();
+
+    /*
+       Refletividade.
+    */
+
+    if(mode === "reflectivity") {
+
+        ctx.fillStyle =
+            "rgba(50,180,80,.18)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            storm.x,
+            storm.y,
+            160,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+    /*
+       Velocity couplet.
+    */
+
+    if(mode === "velocity" ||
+       mode === "rotation") {
+
+        ctx.fillStyle =
+            "rgba(80,140,255,.3)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            storm.x-45,
+            storm.y,
+            45,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle =
+            "rgba(255,80,80,.3)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            storm.x+45,
+            storm.y,
+            45,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+    /*
+       Hook echo estilizado.
+    */
+
+    if(mode === "hook") {
+
+        ctx.strokeStyle =
+            "rgba(100,220,100,.7)";
+
+        ctx.lineWidth = 7;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            storm.x+40,
+            storm.y+20,
+            70,
+            0,
+            Math.PI*.9
+        );
+
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
+
+/* ---------- CLOUDS ---------- */
+
+function drawStormCloud() {
+
+    const size =
+        100 +
+        storm.energy*140;
 
     const gradient =
-
-        dc.createRadialGradient(
-
-            tornado.x,
-            tornado.y,
-            2,
-
-            tornado.x,
-            tornado.y,
-            radius * 1.35
-
+        ctx.createRadialGradient(
+            storm.x,
+            storm.y-80,
+            20,
+            storm.x,
+            storm.y-80,
+            size
         );
-
 
     gradient.addColorStop(
         0,
-        `rgba(
-            25,
-            25,
-            20,
-            ${.13 + e.radius / 500}
-        )`
+        "rgba(100,115,130,.5)"
     );
-
-
-    gradient.addColorStop(
-        .45,
-        `rgba(
-            80,
-            55,
-            30,
-            ${.08 + e.radius / 800}
-        )`
-    );
-
 
     gradient.addColorStop(
         1,
-        "rgba(0,0,0,0)"
+        "rgba(20,30,40,0)"
     );
 
+    ctx.fillStyle = gradient;
 
-    dc.fillStyle =
-        gradient;
+    ctx.beginPath();
 
-
-    dc.beginPath();
-
-
-    dc.arc(
-        tornado.x,
-        tornado.y,
-        radius * 1.35,
+    ctx.arc(
+        storm.x,
+        storm.y-80,
+        size,
         0,
-        Math.PI * 2
+        Math.PI*2
     );
 
-
-    dc.fill();
-
-
-    /* =====================================================
-       OBJETOS
-    ===================================================== */
-
-    for (
-        const object of objects
-    ) {
-
-        if (!object.alive)
-            continue;
-
-
-        const d =
-            Math.hypot(
-
-                object.x -
-                tornado.x,
-
-                object.y -
-                tornado.y
-
-            );
-
-
-        if (
-            d <
-            radius * 1.15
-            &&
-            Math.random()
-            <
-            dt *
-            (
-                .8 +
-                tornado.level *
-                .7
-            )
-        ) {
-
-            object.alive =
-                false;
-
-
-            hits++;
-
-
-            score +=
-                (tornado.level + 1)
-                * 10;
-
-
-            debris.push({
-
-                x: object.x,
-
-                y: object.y,
-
-                vx: rand(
-                    -90,
-                    90
-                ),
-
-                vy: rand(
-                    -100,
-                    20
-                ),
-
-                life: 1.4,
-
-                size: object.size
-
-            });
-
-
-            addLog(
-                `${object.type} atingido pelo vórtice.`
-            );
-
-        }
-
-    }
-
-
-    /* =====================================================
-       PARTÍCULAS
-    ===================================================== */
-
-    for (
-        const p of particles
-    ) {
-
-        p.a +=
-
-            p.speed
-            *
-            dt
-            *
-            (
-                1 +
-                tornado.level *
-                .1
-            );
-
-
-        p.r +=
-
-            Math.sin(
-                p.a * 2 +
-                t
-            )
-            *
-            dt
-            *
-            3;
-
-
-        p.r =
-            clamp(
-                p.r,
-                5,
-                radius * 2.2
-            );
-
-
-        p.life -=
-            dt * .06;
-
-
-        if (
-            p.life < 0
-        ) {
-
-            Object.assign(
-                p,
-                makeDustParticle()
-            );
-
-
-            p.life =
-                rand(1, 4);
-
-        }
-
-    }
-
-
-    /* =====================================================
-       DESTROÇOS
-    ===================================================== */
-
-    for (
-        const d of debris
-    ) {
-
-        d.x +=
-            d.vx * dt;
-
-
-        d.y +=
-            d.vy * dt;
-
-
-        d.vy +=
-            100 * dt;
-
-
-        d.life -=
-            dt;
-
-    }
-
-
-    debris =
-        debris.filter(
-            d => d.life > 0
-        );
-
-
-    /* =====================================================
-       CHUVA
-    ===================================================== */
-
-    if (
-        $("rain").checked
-    ) {
-
-        for (
-            const r of rain
-        ) {
-
-            r.x +=
-                r.vx * dt;
-
-
-            r.y +=
-                r.vy * dt;
-
-
-            if (
-                r.y > H
-            ) {
-
-                r.y = -10;
-
-                r.x =
-                    rand(0, W);
-
-            }
-
-        }
-
-    }
-
-
-    /* =====================================================
-       RELÂMPAGO AUTOMÁTICO
-    ===================================================== */
-
-    lightningTimer -= dt;
-
-
-    if (
-        lightningTimer <= 0
-        &&
-        Math.random()
-        <
-        dt * .035
-    ) {
-
-        lightningTimer =
-            rand(3, 8);
-
-
-        flash = .9;
-
-
-        addLog(
-            "⚡ Descarga elétrica detectada."
-        );
-
-    }
-
-
-    flash =
-        Math.max(
-            0,
-            flash - dt * 2.8
-        );
-
-
-    /* =====================================================
-       SAÍDA DO MAPA
-    ===================================================== */
-
-    if (
-        tornado.x >
-        W + 100
-    ) {
-
-        running = false;
-
-
-        addLog(
-            "Tornado deixou o domínio da simulação."
-        );
-
-
-        $("alert").textContent =
-            "● EVENTO ENCERRADO";
-
-    }
-
-
-    updateHUD();
-
+    ctx.fill();
 }
 
 
-/* =========================================================
-   DESENHAR
-========================================================= */
+/* ---------- RAIN ---------- */
 
-function draw() {
+const rain = [];
+
+for(let i=0;i<300;i++) {
+
+    rain.push({
+
+        x:rand(0,W),
+        y:rand(0,H),
+
+        speed:rand(6,15),
+
+        length:rand(5,15)
+    });
+}
+
+function drawRain(dt) {
+
+    for(const r of rain) {
+
+        r.x +=
+            atmosphere.surfaceWind.x*.05;
+
+        r.y +=
+            r.speed *
+            dt *
+            60;
+
+        if(r.y > H) {
+
+            r.y = -20;
+            r.x = rand(0,W);
+        }
+
+        ctx.strokeStyle =
+            "rgba(130,170,200,.16)";
+
+        ctx.beginPath();
+
+        ctx.moveTo(r.x,r.y);
+
+        ctx.lineTo(
+            r.x-3,
+            r.y+r.length
+        );
+
+        ctx.stroke();
+    }
+}
+
+
+/* ---------- LIGHTNING ---------- */
+
+let lightning = 0;
+
+function drawLightning() {
+
+    if(lightning <= 0) return;
+
+    lightning -= .03;
+
+    ctx.fillStyle =
+        `rgba(220,240,255,${lightning*.35})`;
+
+    ctx.fillRect(
+        0,0,W,H
+    );
+
+    if(lightning > .5) {
+
+        ctx.strokeStyle =
+            "rgba(230,250,255,.9)";
+
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+
+        let x =
+            storm.x +
+            rand(-120,120);
+
+        let y =
+            storm.y-200;
+
+        ctx.moveTo(x,y);
+
+        for(let i=0;i<7;i++) {
+
+            x += rand(-30,30);
+            y += rand(20,50);
+
+            ctx.lineTo(x,y);
+        }
+
+        ctx.stroke();
+    }
+}
+
+
+/* ---------- SENSORS ---------- */
+
+const probes = [];
+const stations = [];
+
+let samples = 0;
+
+function deployProbe() {
+
+    probes.push({
+
+        x:storm.x+rand(-100,100),
+        y:storm.y+rand(-100,100),
+
+        data: []
+    });
+
+    addEvent(
+        "📍 Sonda implantada no terreno."
+    );
+}
+
+function deployStation() {
+
+    stations.push({
+
+        x:storm.x+rand(-150,150),
+        y:storm.y+rand(-150,150),
+
+        data:[]
+    });
+
+    addEvent(
+        "🌡 Estação meteorológica instalada."
+    );
+}
+
+function updateSensors() {
+
+    for(const p of probes) {
+
+        if(Math.random()<.03) {
+
+            p.data.push({
+
+                wind:tornado.wind,
+                pressure:atmosphere.pressure,
+                temperature:atmosphere.temperature
+            });
+
+            samples++;
+        }
+    }
+
+    for(const s of stations) {
+
+        if(Math.random()<.03) {
+
+            s.data.push({
+
+                wind:atmosphere.surfaceWind.x,
+                pressure:atmosphere.pressure,
+                humidity:atmosphere.humidity
+            });
+
+            samples++;
+        }
+    }
+}
+
+function drawSensors() {
+
+    for(const p of probes) {
+
+        ctx.fillStyle = "#72d9ff";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            4,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+    for(const s of stations) {
+
+        ctx.fillStyle = "#ffe071";
+
+        ctx.fillRect(
+            s.x-4,
+            s.y-4,
+            8,
+            8
+        );
+    }
+}
+
+
+/* ---------- EVENTS ---------- */
+
+function addEvent(text) {
+
+    const events =
+        document.getElementById("events");
+
+    const div =
+        document.createElement("div");
+
+    div.className = "event";
+
+    div.textContent =
+        `[${formatTime(simTime)}] ${text}`;
+
+    events.prepend(div);
+
+    while(events.children.length > 30) {
+
+        events.removeChild(
+            events.lastChild
+        );
+    }
+}
+
+
+/* ---------- EF ---------- */
+
+function getEF() {
+
+    if(!tornado.active)
+        return "—";
+
+    if(tornado.wind < 137)
+        return "EF0";
+
+    if(tornado.wind < 177)
+        return "EF1";
+
+    if(tornado.wind < 217)
+        return "EF2";
+
+    if(tornado.wind < 266)
+        return "EF3";
+
+    if(tornado.wind < 322)
+        return "EF4";
+
+    return "EF5";
+}
+
+
+/* ---------- HUD ---------- */
+
+function updateUI() {
+
+    const phase =
+        storm.phase;
+
+    document.getElementById("hPhase")
+        .textContent = phase;
+
+    document.getElementById("hTornado")
+        .textContent =
+            tornado.active ? "SIM" : "NÃO";
+
+    document.getElementById("hEF")
+        .textContent = getEF();
+
+    document.getElementById("hWind")
+        .textContent =
+            Math.round(tornado.wind) +
+            " km/h";
+
+    document.getElementById("hCape")
+        .textContent =
+            Math.round(atmosphere.cape) +
+            " J/kg";
+
+    document.getElementById("hShear")
+        .textContent =
+            Math.round(atmosphere.shear) +
+            " m/s";
+
+    document.getElementById("hPressure")
+        .textContent =
+            atmosphere.pressure.toFixed(1) +
+            " hPa";
+
+    document.getElementById("hTime")
+        .textContent =
+            formatTime(simTime);
+
+    document.getElementById("temp")
+        .textContent =
+            atmosphere.temperature.toFixed(1)+"°C";
+
+    document.getElementById("dew")
+        .textContent =
+            atmosphere.dewpoint.toFixed(1)+"°C";
+
+    document.getElementById("humidity")
+        .textContent =
+            Math.round(atmosphere.humidity)+"%";
+
+    document.getElementById("pressure")
+        .textContent =
+            atmosphere.pressure.toFixed(1)+" hPa";
+
+    document.getElementById("cape")
+        .textContent =
+            Math.round(atmosphere.cape)+" J/kg";
+
+    document.getElementById("cin")
+        .textContent =
+            Math.round(atmosphere.cin)+" J/kg";
+
+    document.getElementById("lcl")
+        .textContent =
+            Math.round(atmosphere.lcl)+" m";
+
+    document.getElementById("lfc")
+        .textContent =
+            Math.round(atmosphere.lfc)+" m";
+
+    document.getElementById("shear")
+        .textContent =
+            Math.round(atmosphere.shear)+" m/s";
+
+    document.getElementById("updraft")
+        .textContent =
+            Math.round(storm.updraft)+" m/s";
+
+    document.getElementById("downdraft")
+        .textContent =
+            Math.round(storm.downdraft)+" m/s";
+
+    document.getElementById("meso")
+        .textContent =
+            storm.mesoStrength > 1
+            ? "Forte"
+            : storm.mesoStrength > .5
+            ? "Moderado"
+            : "Fraco";
+
+    document.getElementById("rotation")
+        .textContent =
+            storm.rotation.toFixed(3)+" rad/s";
+
+    document.getElementById("inflow")
+        .textContent =
+            Math.round(storm.inflow)+" km/h";
+
+    document.getElementById("outflow")
+        .textContent =
+            Math.round(storm.outflow)+" km/h";
+
+    document.getElementById("width")
+        .textContent =
+            Math.round(tornado.width)+" m";
+
+    document.getElementById("movement")
+        .textContent =
+            Math.round(
+                Math.hypot(
+                    tornado.vx,
+                    tornado.vy
+                )*18
+            )+" km/h";
+
+    document.getElementById("tRotation")
+        .textContent =
+            Math.round(tornado.wind)+" km/h";
+
+    document.getElementById("subvortices")
+        .textContent =
+            tornado.subvortices.length;
+
+    document.getElementById("distance")
+        .textContent =
+            (simTime *
+            Math.hypot(
+                tornado.vx,
+                tornado.vy
+            )*.01).toFixed(2)+" km";
+
+    document.getElementById("probeCount")
+        .textContent =
+            probes.length;
+
+    document.getElementById("stationCount")
+        .textContent =
+            stations.length;
+
+    document.getElementById("samples")
+        .textContent =
+            samples;
+}
+
+
+/* ---------- CONTROLS ---------- */
+
+let paused = false;
+
+function togglePause() {
+
+    paused = !paused;
+}
+
+function newStorm() {
+
+    storm.age = 0;
+
+    storm.x =
+        rand(W*.25,W*.65);
+
+    storm.y =
+        rand(H*.2,H*.7);
+
+    storm.vx =
+        rand(.2,.7);
+
+    storm.vy =
+        rand(-.2,.2);
+
+    storm.tornado = false;
+
+    tornado.active = false;
+
+    addEvent(
+        "🌩 Nova célula convectiva criada."
+    );
+}
+
+function resetWorld() {
+
+    world.generate();
+
+    probes.length = 0;
+    stations.length = 0;
+
+    samples = 0;
+
+    document.getElementById("events")
+        .innerHTML = "";
+
+    newStorm();
+
+    addEvent(
+        "♻ Terreno restaurado."
+    );
+}
+
+
+/* ---------- LOOP ---------- */
+
+let last = performance.now();
+let simTime = 0;
+
+function loop(now) {
+
+    requestAnimationFrame(loop);
+
+    const raw =
+        (now-last)/1000;
+
+    last = now;
+
+    const speed =
+        Number(
+            document.getElementById("speed").value
+        );
+
+    const dt =
+        Math.min(raw,.05) *
+        speed;
+
+    if(!paused) {
+
+        simTime += dt;
+
+        atmosphere.update();
+
+        storm.update(dt);
+
+        updateSensors();
+
+        if(
+            storm.mesoStrength > .9 &&
+            Math.random() < .0008
+        ) {
+
+            lightning = 1;
+
+        }
+    }
 
     ctx.clearRect(
         0,
@@ -1960,893 +2062,69 @@ function draw() {
         H
     );
 
+    world.draw();
 
-    /* =====================================================
-       CÉU
-    ===================================================== */
+    drawStormCloud();
 
-    const sky =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            H
-        );
+    drawRain(dt);
 
+    drawRadar();
 
-    sky.addColorStop(
-        0,
-        "#0a1020"
-    );
+    drawSensors();
 
+    tornado.draw();
 
-    sky.addColorStop(
-        .5,
-        "#172033"
-    );
+    drawLightning();
 
-
-    sky.addColorStop(
-        1,
-        "#102019"
-    );
-
-
-    ctx.fillStyle =
-        sky;
-
-
-    ctx.fillRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-
-    /* =====================================================
-       TERRENO
-    ===================================================== */
-
-    if (damage) {
-
-        ctx.drawImage(
-            damage,
-            0,
-            0,
-            W,
-            H
-        );
-
-    }
-
-
-    /* =====================================================
-       RADAR
-    ===================================================== */
-
-    if (
-        $("grid").checked
-    ) {
-
-        ctx.strokeStyle =
-            "rgba(96,165,250,.12)";
-
-
-        ctx.lineWidth = 1;
-
-
-        for (
-            let x = 0;
-            x < W;
-            x += 40
-        ) {
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                x,
-                0
-            );
-
-            ctx.lineTo(
-                x,
-                H
-            );
-
-            ctx.stroke();
-
-        }
-
-
-        for (
-            let y = 0;
-            y < H;
-            y += 40
-        ) {
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                0,
-                y
-            );
-
-            ctx.lineTo(
-                W,
-                y
-            );
-
-            ctx.stroke();
-
-        }
-
-
-        if (tornado) {
-
-            ctx.strokeStyle =
-                "rgba(56,189,248,.22)";
-
-
-            for (
-                let r = 80;
-                r < 400;
-                r += 80
-            ) {
-
-                ctx.beginPath();
-
-                ctx.arc(
-                    tornado.x,
-                    tornado.y,
-                    r,
-                    0,
-                    Math.PI * 2
-                );
-
-                ctx.stroke();
-
-            }
-
-        }
-
-    }
-
-
-    /* =====================================================
-       OBJETOS
-    ===================================================== */
-
-    ctx.textAlign =
-        "center";
-
-    ctx.textBaseline =
-        "middle";
-
-
-    for (
-        const object of objects
-    ) {
-
-        if (!object.alive)
-            continue;
-
-
-        ctx.font =
-            `${object.size * 1.25}px serif`;
-
-
-        ctx.fillText(
-            object.type,
-            object.x,
-            object.y
-        );
-
-    }
-
-
-    /* =====================================================
-       CHUVA
-    ===================================================== */
-
-    if (
-        $("rain").checked
-    ) {
-
-        ctx.strokeStyle =
-            "rgba(125,211,252,.22)";
-
-
-        ctx.lineWidth = 1;
-
-
-        for (
-            const r of rain
-        ) {
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                r.x,
-                r.y
-            );
-
-            ctx.lineTo(
-                r.x - 3,
-                r.y + 10
-            );
-
-            ctx.stroke();
-
-        }
-
-    }
-
-
-    /* =====================================================
-       TORNADO
-    ===================================================== */
-
-    if (tornado) {
-
-        drawTornado();
-
-    }
-
-
-    /* =====================================================
-       DESTROÇOS
-    ===================================================== */
-
-    for (
-        const d of debris
-    ) {
-
-        ctx.save();
-
-
-        ctx.translate(
-            d.x,
-            d.y
-        );
-
-
-        ctx.rotate(
-            d.life * 8
-        );
-
-
-        ctx.globalAlpha =
-            Math.max(
-                0,
-                d.life
-            );
-
-
-        ctx.fillStyle =
-            "#c2a878";
-
-
-        ctx.fillRect(
-            -d.size / 3,
-            -d.size / 3,
-            d.size,
-            d.size / 2
-        );
-
-
-        ctx.restore();
-
-    }
-
-
-    ctx.globalAlpha = 1;
-
-
-    /* =====================================================
-       FLASH
-    ===================================================== */
-
-    if (
-        flash > 0
-    ) {
-
-        ctx.fillStyle =
-            `rgba(
-                255,
-                255,
-                255,
-                ${flash * .18}
-            )`;
-
-
-        ctx.fillRect(
-            0,
-            0,
-            W,
-            H
-        );
-
-    }
-
+    updateUI();
 }
 
+world.generate();
 
-/* =========================================================
-   DESENHAR TORNADO
-========================================================= */
+newStorm();
 
-function drawTornado() {
-
-    const e =
-        EF[
-            Math.round(
-                tornado.level
-            )
-        ];
-
-
-    const base =
-        tornado.radius;
-
-
-    /* =====================================================
-       NUVEM
-    ===================================================== */
-
-    const cloudY =
-        tornado.y - 115;
-
-
-    const cloudGradient =
-
-        ctx.createRadialGradient(
-
-            tornado.x,
-            cloudY,
-            10,
-
-            tornado.x,
-            cloudY,
-            130
-
-        );
-
-
-    cloudGradient.addColorStop(
-        0,
-        "rgba(225,230,240,.22)"
-    );
-
-
-    cloudGradient.addColorStop(
-        1,
-        "rgba(80,90,105,0)"
-    );
-
-
-    ctx.fillStyle =
-        cloudGradient;
-
-
-    ctx.beginPath();
-
-
-    ctx.arc(
-        tornado.x,
-        cloudY,
-        130,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fill();
-
-
-    /* =====================================================
-       FUNIL
-    ===================================================== */
-
-    for (
-        let i = 12;
-        i >= 1;
-        i--
-    ) {
-
-        const p =
-            i / 12;
-
-
-        const yy =
-            tornado.y -
-            125 * p;
-
-
-        const width =
-
-            base
-            *
-            (
-                .35 +
-                .65 * p
-            )
-            *
-            (
-                1 +
-                Math.sin(
-                    stormTime * 3 + i
-                ) * .08
-            );
-
-
-        const alpha =
-            .025 +
-            .012 * i;
-
-
-        ctx.fillStyle =
-
-            `rgba(
-                210,
-                215,
-                220,
-                ${alpha}
-            )`;
-
-
-        ctx.beginPath();
-
-
-        ctx.ellipse(
-
-            tornado.x +
-                Math.sin(
-                    stormTime * 2 + i
-                ) * 5,
-
-            yy,
-
-            width *
-                (.45 + .3 * p),
-
-            16 +
-                12 * p,
-
-            0,
-            0,
-            Math.PI * 2
-
-        );
-
-
-        ctx.fill();
-
-    }
-
-
-    /* =====================================================
-       PARTÍCULAS GIRANDO
-    ===================================================== */
-
-    for (
-        const p of particles
-    ) {
-
-        const angle =
-            p.a;
-
-
-        const radius =
-            p.r *
-            (
-                .55 +
-                .45 * p.z
-            );
-
-
-        const px =
-            tornado.x +
-            Math.cos(angle) *
-            radius;
-
-
-        const py =
-            tornado.y +
-            Math.sin(angle) *
-            radius *
-            .42
-            -
-            rand(0, 10);
-
-
-        ctx.globalAlpha =
-            .18 +
-            .45 * p.z;
-
-
-        ctx.fillStyle =
-            e.color;
-
-
-        ctx.beginPath();
-
-
-        ctx.arc(
-            px,
-            py,
-            1.2 +
-                2 * p.z,
-            0,
-            Math.PI * 2
-        );
-
-
-        ctx.fill();
-
-    }
-
-
-    ctx.globalAlpha = 1;
-
-
-    /* =====================================================
-       NÚCLEO
-    ===================================================== */
-
-    const core =
-
-        ctx.createRadialGradient(
-
-            tornado.x,
-            tornado.y,
-            2,
-
-            tornado.x,
-            tornado.y,
-            base
-
-        );
-
-
-    core.addColorStop(
-        0,
-        "rgba(245,245,245,.75)"
-    );
-
-
-    core.addColorStop(
-        .25,
-        `${e.color}99`
-    );
-
-
-    core.addColorStop(
-        1,
-        "rgba(0,0,0,0)"
-    );
-
-
-    ctx.fillStyle =
-        core;
-
-
-    ctx.beginPath();
-
-
-    ctx.arc(
-        tornado.x,
-        tornado.y,
-        base,
-        0,
-        Math.PI * 2
-    );
-
-
-    ctx.fill();
-
-
-    /* =====================================================
-       BORDA DO VÓRTICE
-    ===================================================== */
-
-    ctx.strokeStyle =
-        e.color;
-
-
-    ctx.lineWidth =
-        2.5;
-
-
-    ctx.beginPath();
-
-
-    ctx.arc(
-
-        tornado.x,
-
-        tornado.y,
-
-        base *
-            (
-                .8 +
-                Math.sin(
-                    stormTime * 5
-                ) * .06
-            ),
-
-        0,
-
-        Math.PI * 2
-
-    );
-
-
-    ctx.stroke();
-
-
-    /* =====================================================
-       SETA DO MOVIMENTO
-    ===================================================== */
-
-    ctx.strokeStyle =
-        "rgba(255,255,255,.55)";
-
-
-    ctx.lineWidth = 2;
-
-
-    ctx.beginPath();
-
-
-    ctx.moveTo(
-        tornado.x - 20,
-        tornado.y
-    );
-
-
-    ctx.lineTo(
-        tornado.x + 25,
-        tornado.y
-    );
-
-
-    ctx.stroke();
-
-
-    ctx.beginPath();
-
-
-    ctx.moveTo(
-        tornado.x + 25,
-        tornado.y
-    );
-
-
-    ctx.lineTo(
-        tornado.x + 17,
-        tornado.y - 5
-    );
-
-
-    ctx.moveTo(
-        tornado.x + 25,
-        tornado.y
-    );
-
-
-    ctx.lineTo(
-        tornado.x + 17,
-        tornado.y + 5
-    );
-
-
-    ctx.stroke();
-
-}
-
-
-/* =========================================================
-   HUD
-========================================================= */
-
-function updateHUD() {
-
-    const level =
-        tornado
-            ? Math.round(
-                tornado.level
-            )
-            : 0;
-
-
-    const e =
-        EF[level];
-
-
-    $("ef").textContent =
-        tornado
-            ? e.name
-            : "--";
-
-
-    $("ef").style.color =
-        tornado
-            ? e.color
-            : "#fff";
-
-
-    $("wind").textContent =
-
-        tornado
-            ? `${randInt(
-                e.min,
-                e.max
-            )} km/h`
-            : "0 km/h";
-
-
-    $("duration").textContent =
-        formatTime(
-            stormTime
-        );
-
-
-    $("clock").textContent =
-        formatTime(
-            stormTime
-        );
-
-
-    $("distance").textContent =
-        Math.floor(
-            distance
-        )
-        +
-        " m";
-
-
-    $("hits").textContent =
-        hits;
-
-
-    $("score").textContent =
-        score;
-
-
-    $("speedText").textContent =
-        speed.toFixed(1)
-        +
-        "x";
-
-}
-
-
-/* =========================================================
-   BOTÕES
-========================================================= */
-
-$("start").onclick =
-    startStorm;
-
-
-$("pause").onclick = () => {
-
-    if (!running)
-        return;
-
-
-    paused =
-        !paused;
-
-
-    $("pause").textContent =
-
-        paused
-            ? "▶️ Continuar"
-            : "⏸️ Pausar";
-
-
-    $("alert").textContent =
-
-        paused
-            ? "● SIMULAÇÃO PAUSADA"
-            : "● TORNADO NO SOLO";
-
-};
-
-
-$("reset").onclick =
-    resetWorld;
-
-
-$("lightning").onclick = () => {
-
-    flash = 1;
-
-    lightningTimer = 5;
-
-
-    addLog(
-        "⚡ Relâmpago forçado pelo operador."
-    );
-
-};
-
-
-$("speed").oninput =
-    event => {
-
-        speed =
-            Number(
-                event.target.value
-            );
-
-
-        updateHUD();
-
-    };
-
-
-$("rain").onchange = () => {
-
-    addLog(
-
-        $("rain").checked
-
-            ? "Chuva ativada."
-
-            : "Chuva desativada."
-
-    );
-
-};
-
-
-$("grid").onchange =
-    draw;
-
-
-/* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
-
-resize();
-
-resetWorld();
-
-
-/* =========================================================
-   LOOP PRINCIPAL
-========================================================= */
-
-function loop(time) {
-
-    const dt =
-        Math.min(
-            .05,
-            (time - last) / 1000 || 0
-        );
-
-
-    last = time;
-
-
-    update(dt);
-
-    draw();
-
-
-    requestAnimationFrame(
-        loop
-    );
-
-}
-
-
-requestAnimationFrame(
-    loop
+addEvent(
+    "🛰 Simulador iniciado."
 );
+
+addEvent(
+    "📡 Aguardando organização da supercélula..."
+);
+
+requestAnimationFrame(loop);
+
+
+/* ---------- KEYBOARD ---------- */
+
+document.addEventListener("keydown", e => {
+
+    if(e.code === "Space") {
+
+        e.preventDefault();
+
+        togglePause();
+    }
+
+    if(e.key.toLowerCase() === "r") {
+
+        resetWorld();
+    }
+
+    if(e.key.toLowerCase() === "n") {
+
+        newStorm();
+    }
+
+    if(e.key.toLowerCase() === "p") {
+
+        deployProbe();
+    }
+
+    if(e.key.toLowerCase() === "m") {
+
+        toggleRadar();
+    }
+});
 
 </script>
 
