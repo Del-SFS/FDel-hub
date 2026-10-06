@@ -177,7 +177,16 @@
 .back:hover{
     color:white;
 }
-        </style>
+
+/* Substitua '.sua-classe-da-imagem' pelo nome da classe da sua foto */
+.imagem-preview {
+    width: 100%;       /* Ocupa a largura total do bloco onde ela está */
+    max-width: 500px;  /* Define o tamanho máximo que ela pode ter no computador */
+    height: auto;      /* Altera a altura proporcionalmente para não distorcer */
+    display: block;    /* Remove espaços em branco indesejados abaixo da imagem */
+}
+
+</style>
 
     </head>
 <body>
@@ -195,6 +204,9 @@
         O MGOL ou PGOL é um <b>Launcher de Jogos completamente Offline</b>, que vc possa jogar 200 jogos de arquede, tabuleiro, puzple, classicos, etc. 
         <br>
         Ele tem uma interface muito bonita e com <b>sistema de favoritos, pesquisa, tags, e um sistema de jogo aleatorio!</b>
+        <br><br>
+        <img src="../preview/mpgol-1.png" width="700" height="300" class="preview-img" alt="Preview">
+
         <br><br>
         feito em  HTML, CSS, e JS (JavaScript)
     </p>
