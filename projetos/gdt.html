@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Textos</title>
+
+<style>
+:root {
+    --page: #f3f5fa;
+    --panel: #ffffff;
+    --surface: #fbfcff;
+    --text: #202638;
+    --muted: #687188;
+    --border: #dfe4ef;
+    --accent: #465ee8;
+    --soft: #edf0f8;
+}
+
+body.dark {
+    --page: #11141c;
+    --panel: #1b202b;
+    --surface: #151a24;
+    --text: #edf0f8;
+    --muted: #a5aec2;
+    --border: #343c4d;
+    --accent: #8292ff;
+    --soft: #2a3140;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 32px 16px;
+    display: grid;
+    place-items: center;
+    background: var(--page);
+    color: var(--text);
+    font-family: system-ui, sans-serif;
+    transition: 0.2s;
+}
+
+main {
+    width: min(800px, 100%);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+h1 {
+    margin: 0 0 7px;
+}
+
+.subtitle {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+button {
+    border: 0;
+    border-radius: 11px;
+    padding: 12px 18px;
+    background: var(--accent);
+    color: white;
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.secondary,
+.theme-button {
+    background: var(--soft);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+#texto {
+    min-height: 320px;
+    padding: 30px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+
+    font-family: Georgia, "Palatino Linotype", serif;
+    font-size: 1.25rem;
+    line-height: 1.95;
+    letter-spacing: 0.015em;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.hint {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 540px) {
+    .top {
+        flex-direction: column;
+    }
+
+    main {
+        padding: 20px 16px;
+    }
+
+    #texto {
+        padding: 20px;
+        font-size: 1.15rem;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<main>
+
+    <header class="top">
+        <div>
+            <h1>Gerador de textos ✍️</h1>
+            <p class="subtitle">
+                Gere um texto aleatório para copiar no papel e praticar sua escrita.
+            </p>
+        </div>
+
+        <button id="tema" class="theme-button">
+            🌙 Tema escuro
+        </button>
+    </header>
+
+    <div class="toolbar">
+        <button id="gerar">✦ Gerar texto</button>
+        <button id="copiar" class="secondary">
+            Copiar texto
+        </button>
+    </div>
+
+    <section id="texto">
+        Clique em "Gerar texto" para receber seu primeiro texto.
+    </section>
+
+    <p class="hint">
+        Dica: escreva com calma e preste atenção nas letras,
+        nos acentos e na pontuação.
+    </p>
+
+</main>
+
+<script>
+
+const textos = [
+
+`Às vezes, as melhores ideias aparecem quando estamos fazendo algo simples. Uma caminhada tranquila, uma música diferente ou alguns minutos observando o céu podem transformar um dia comum em uma pequena aventura. O importante é manter a curiosidade e estar disposto a descobrir coisas novas.`,
+
+`No alto de uma colina havia uma pequena estação meteorológica. Todas as manhãs, antes de o Sol aparecer, alguém chegava para observar as nuvens, anotar a temperatura e verificar a direção do vento. Mesmo nos dias sem novidades, cada anotação ajudava a entender melhor o tempo.`,
+
+`Imagine uma cidade onde as luzes das casas parecem estrelas vistas do espaço. As ruas ficam silenciosas durante a noite, enquanto algumas janelas continuam acesas. Em um quarto qualquer, alguém está criando um projeto, aprendendo uma habilidade ou planejando algo que ainda não existe.`,
+
+`Um bom projeto não precisa começar perfeito. Primeiro vem uma ideia, depois um teste, alguns erros e novas tentativas. Cada problema resolvido ensina alguma coisa. Com paciência e dedicação, uma ideia pequena pode se transformar em algo de que você se orgulha.`,
+
+`O vento atravessava as árvores e movimentava as folhas como se fossem ondas verdes. Ao longe, nuvens cinzentas cobriam parte do horizonte. Parecia que a chuva estava chegando, mas ninguém tinha pressa: aquele momento tranquilo também fazia parte da paisagem.`,
+
+`Existe um universo inteiro escondido nos detalhes. Uma formiga atravessando uma calçada, o desenho de uma folha, o som distante de um avião e o brilho de uma estrela podem despertar perguntas interessantes. Observar é uma maneira simples de começar a aprender.`,
+
+`Depois de organizar a mesa, separar o material e abrir o caderno, finalmente chegou a hora de começar. A primeira frase parecia difícil, mas as palavras foram aparecendo aos poucos. Quando percebeu, a página já estava quase cheia.`,
+
+`A exploração espacial exige planejamento, conhecimento e trabalho em equipe. Antes de uma missão, cientistas e engenheiros estudam muitos detalhes para reduzir riscos e entender o que pode acontecer. Cada descoberta ajuda a ampliar nosso conhecimento sobre o Universo.`,
+
+`Em uma tarde de chuva, a internet caiu por alguns minutos. Sem vídeos ou jogos, restou olhar pela janela, ouvir as gotas no telhado e pensar em novas ideias. Às vezes, uma pausa inesperada abre espaço para a criatividade.`,
+
+`A biblioteca parecia guardar milhares de mundos diferentes. Em cada prateleira havia histórias, descobertas e perguntas esperando por alguém. Escolher um livro era como abrir uma porta para um lugar que talvez nunca tivesse sido imaginado antes.`
+
+];
+
+const texto = document.getElementById("texto");
+const botaoGerar = document.getElementById("gerar");
+const botaoCopiar = document.getElementById("copiar");
+const botaoTema = document.getElementById("tema");
+
+let ultimoIndice = -1;
+
+// GERAR TEXTO
+
+botaoGerar.addEventListener("click", () => {
+
+    let indice;
+
+    do {
+        indice = Math.floor(Math.random() * textos.length);
+    } while (textos.length > 1 && indice === ultimoIndice);
+
+    ultimoIndice = indice;
+
+    texto.textContent = textos[indice];
+
+});
+
+// ALTERAR TEMA
+
+botaoTema.addEventListener("click", () => {
+
+    const escuro = document.body.classList.toggle("dark");
+
+    botaoTema.textContent = escuro
+        ? "☀️ Tema claro"
+        : "🌙 Tema escuro";
+
+});
+
+// COPIAR TEXTO
+
+botaoCopiar.addEventListener("click", async () => {
+
+    try {
+
+        await navigator.clipboard.writeText(texto.textContent);
+
+        botaoCopiar.textContent = "Copiado!";
+
+        setTimeout(() => {
+            botaoCopiar.textContent = "Copiar texto";
+        }, 1400);
+
+    } catch {
+
+        botaoCopiar.textContent = "Não foi possível copiar";
+
+        setTimeout(() => {
+            botaoCopiar.textContent = "Copiar texto";
+        }, 1800);
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
